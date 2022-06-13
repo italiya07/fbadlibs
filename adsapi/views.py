@@ -7,8 +7,8 @@ from rest_framework.response import Response
 # Create your views here.
 
 es=Elasticsearch(
-    ['https://search-testfbadslib-arkod77br4pscry5r4hqaacnfy.us-east-1.es.amazonaws.com/'],
-    http_auth=('jeylearner2022', 'Jey@aws1290'),
+    ['https://search-fbadslib-dev-vtocnlf6uhf7y24wy53x6cz2u4.us-east-1.es.amazonaws.com/'],
+    http_auth=('Denis-Godhani', 'Godhani@@123'),
     )
 
 es.indices.create(index='scraping_project',ignore=400)
