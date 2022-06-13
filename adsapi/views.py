@@ -11,7 +11,8 @@ es=Elasticsearch(
     http_auth=('Denis-Godhani', 'Godhani@@123'),
     )
 
-es.indices.create(index='fbadslib-dev',ignore=400)
+indice="fbadslib-dev"
+es.indices.create(index=indice,ignore=400)
 
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
@@ -23,7 +24,7 @@ class getAllAds(viewsets.ViewSet):
             }
         }
 
-        res=es.search(index="scraping_project",body=query)
+        res=es.search(index=indice,body=query)
         data=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
