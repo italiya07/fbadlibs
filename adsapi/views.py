@@ -11,8 +11,8 @@ es=Elasticsearch(
     http_auth=('Denis-Godhani', 'Godhani@@123'),
     )
 
-indice="fbadslib-dev"
-es.indices.create(index=indice,ignore=400)
+es_indice='fbadslib-dev'
+es.indices.create(index=es_indice,ignore=400)
 
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
@@ -24,11 +24,10 @@ class getAllAds(viewsets.ViewSet):
             }
         }
 
-        res=es.search(index=indice,body=query)
+        res=es.search(index=es_indice,body=query)
         data=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 data.append(d["_source"])
             return Response({"data":data,"msg":"Data fetched successfully"}) 
         return Response("Data is not available")
-
