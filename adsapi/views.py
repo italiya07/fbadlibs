@@ -11,7 +11,7 @@ es=Elasticsearch(
     http_auth=('Denis-Godhani', 'Godhani@@123'),
     )
 
-es.indices.create(index='scraping_project',ignore=400)
+es.indices.create(index='fbadslib-dev',ignore=400)
 
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
