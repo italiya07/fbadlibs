@@ -16,7 +16,6 @@ pathspec
 #pypiwin32==223
 python-dateutil
 pytz
-#pywin32==304
 PyYAML
 requests
 semantic-version
