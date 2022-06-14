@@ -13,7 +13,6 @@ future
 idna
 jmespath
 pathspec
-#pypiwin32==223
 python-dateutil
 pytz
 PyYAML
