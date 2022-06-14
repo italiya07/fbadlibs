@@ -159,4 +159,4 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "http://localhost:3002"
 # ]
 
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = True
