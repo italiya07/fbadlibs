@@ -83,6 +83,17 @@ WSGI_APPLICATION = 'fbadslib.wsgi.application'
 # }
 
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'fbadslib',
+        'USER' : 'postgres',
+        'HOST' : 'fbadslib.cc7py7gnqcap.us-east-1.rds.amazonaws.com',
+        'PASSWORD' : 'JjmjglVqC7yeHp0ghcDF',
+    }
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
