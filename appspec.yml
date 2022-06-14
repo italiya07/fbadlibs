@@ -6,14 +6,13 @@ files:
     overwrite: true
 file_exists_behavior: OVERWRITE
 hooks:
-  # BeforeInstall:
-  #   - location: install_dependencies.sh
-  #     timeout: 2300
-
   AfterInstall:
     - location: restart.sh
       timeout: 2300
 
+# BeforeInstall:
+  #   - location: install_dependencies.sh
+  #     timeout: 2300
 # hooks:
 #       runas: root
 #   AfterInstall:
