@@ -16,7 +16,6 @@ es.indices.create(index=es_indice,ignore=400)
 
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
-        print(es.ping())
         query={
             "size": 10000,
             "query": {
