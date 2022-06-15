@@ -165,7 +165,7 @@ CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK={                                        
     'EXCEPTION_HANDLER': 'utils.exception_handler.custom_exception_handler',
     'DEFAULT_PERMISSION_CLASSES': [
-         'rest_framework.permissions.IsAuthenticated',
+         'rest_framework.permissions.AllowAny',
          ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'adsapi.utils.authentication.SafeJWTAuthentication',
