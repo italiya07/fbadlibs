@@ -5,17 +5,18 @@ from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from rest_framework.response import Response
 import boto3
+from decouple import config
 # Create your views here.
 
 es=Elasticsearch(
-    ['https://search-fbadslib-dev-vtocnlf6uhf7y24wy53x6cz2u4.us-east-1.es.amazonaws.com/'],
-    http_auth=('Denis-Godhani', 'Godhani@@123'),
+    [config("elasticsearch_host")],
+    http_auth=(config("elasticsearch_username"), config("elasticsearch_password")),
     )
 
-s3_resource = boto3.resource('s3',aws_access_key_id = "AKIATXXBU2MXKGPCVQH6",aws_secret_access_key = "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")
+s3_resource = boto3.resource('s3',aws_access_key_id = config("aws_access_key_id"),aws_secret_access_key = config("aws_secret_access_key"))
 client = boto3.client("s3",
-                          aws_access_key_id="AKIATXXBU2MXKGPCVQH6",
-                          aws_secret_access_key="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")
+                          aws_access_key_id=config("aws_access_key_id"),
+                          aws_secret_access_key=config("aws_secret_access_key"))
 
 
 
@@ -41,7 +42,6 @@ class getAllAds(viewsets.ViewSet):
                 pre_signed_url = client.generate_presigned_url('get_object',
                                                   Params={'Bucket': bucket_name,'Key': url},
                                                   ExpiresIn=3600*24)
-                print(pre_signed_url)
                 d["_source"]["bucketMediaURL"]=pre_signed_url
                 data.append(d["_source"])
             return Response({"data":data,"msg":"Data fetched successfully"}) 
