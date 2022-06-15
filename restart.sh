@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# cd /home/ec2-user/fbadsfinal
+cd /home/ec2-user/fbadsfinal
 source venv/bin/activate
 pip install -r requirements.txt
 

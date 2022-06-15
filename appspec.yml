@@ -4,13 +4,14 @@ files:
   - source: /
     destination: /home/ec2-user/fbadsfinal
 
-# BeforeInstall:
-  #   - location: install_dependencies.sh
-  #     timeout: 2300
 hooks:
   AfterInstall:
     - location: restart.sh
       timeout: 2300
+# BeforeInstall:
+  #   - location: install_dependencies.sh
+  #     timeout: 2300
+
 
       
 #   ApplicationStart:
