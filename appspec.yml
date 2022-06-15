@@ -3,12 +3,6 @@ os: linux
 files:
   - source: /
     destination: /home/ec2-user/fbadsfinal
-    overwrite: true
-file_exists_behavior: OVERWRITE
-hooks:
-  AfterInstall:
-    - location: restart.sh
-      timeout: 2300
 
 # BeforeInstall:
   #   - location: install_dependencies.sh
@@ -28,4 +22,3 @@ hooks:
 #     - location: scripts/stop_server.sh
 #       timeout: 300
 #       runas: root
- 
