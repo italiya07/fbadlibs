@@ -19,7 +19,8 @@ from rest_framework.routers import DefaultRouter
 
 router=DefaultRouter()
 router.register('allads',getAllAds,basename="AllAds")
-
+router.register('support',contactSupport,basename="support")
+router.register('usermanager',userManager,basename="registeruser")
 urlpatterns = [
     path('login/', loginview, name='Login'),
     path('', include(router.urls)),

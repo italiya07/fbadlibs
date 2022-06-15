@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 User=get_user_model()
 
 class Useradmin(admin.ModelAdmin):
-    search_fields= ['email','username']
-    list_filter=['email','username']
-    list_display = ['email','username']
+    search_fields= ['email']
+    list_filter=['email']
+    list_display = ['email']
 admin.site.register(User,Useradmin)

@@ -16,6 +16,10 @@ from cryptography.fernet import Fernet
 import datetime
 from django.conf import settings
 from datetime import timedelta
+import smtplib
+from email.mime.text import MIMEText
+from rest_framework import serializers
+from .serializer import *
 # Create your views here.
 
 User = get_user_model()
@@ -101,3 +105,25 @@ class getAllAds(viewsets.ViewSet):
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
         return Response(r.response)
+
+class userManager(viewsets.ViewSet):
+    def create(self,request):
+        data=request.data
+        serializer=UserSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="User created")
+            return Response(r.response)
+        r=rh.ResponseMsg(data={},error=True,msg="User creation failed")
+        return Response(r.response)
+
+    def destroy(self,request,pk=None):
+        user=User.objects.get(pk=pk)
+        user.delete()
+        r=rh.ResponseMsg(data={},error=False,msg="User Deleted")
+        return Response(r.response)
+
+class contactSupport(viewsets.ViewSet):
+    def create(self,request):
+        sender = 'parthbhanderi16@gmail.com'
+        receivers = 'parth.flyontechsolution@gmail.com'
