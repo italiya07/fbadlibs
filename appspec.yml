@@ -3,7 +3,6 @@ os: linux
 files:
   - source: /
     destination: /home/ec2-user/fbadsfinal
-<<<<<<< HEAD
 
 # version: 0.0
 # os: linux
@@ -28,7 +27,3 @@ files:
 #     - location: scripts/stop_server.sh
 #       timeout: 300
 #       runas: root
-=======
-    overwrite: true
-file_exists_behavior: OVERWRITE
->>>>>>> abdad46b404b5e8b7252ae9ab30d8b87a4b9ed1a
