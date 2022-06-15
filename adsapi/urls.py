@@ -21,5 +21,6 @@ router=DefaultRouter()
 router.register('allads',getAllAds,basename="AllAds")
 
 urlpatterns = [
+    path('login/', loginview, name='Login'),
     path('', include(router.urls)),
 ]

@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'adsapi.middleware.SimpleMiddleware' #Custom Middleware
 ]
 
 ROOT_URLCONF = 'fbadslib.urls'
@@ -92,7 +93,7 @@ DATABASES = {
         'NAME': 'fbadslib',
         'USER' : 'postgres',
         'HOST' : 'fbadslib.cc7py7gnqcap.us-east-1.rds.amazonaws.com',
-        'PASSWORD' : 'JjmjglVqC7yeHp0ghcDF',
+        'PASSWORD' : 'JjmjglVqC7yeHp0ghcDF'
     }
 }
 
@@ -160,3 +161,23 @@ CORS_ALLOW_ALL_ORIGINS = True
 # ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+REST_FRAMEWORK={                                        
+    'EXCEPTION_HANDLER': 'utils.exception_handler.custom_exception_handler',
+    'DEFAULT_PERMISSION_CLASSES': [
+         'rest_framework.permissions.IsAuthenticated',
+         ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'adsapi.utils.authentication.SafeJWTAuthentication',
+    )
+}
+
+AUTH_USER_MODEL = 'adsapi.User'
+
+SIMPLE_JWT = {
+  'AUTH_COOKIE_DOMAIN': None,     # A string like "example.com", or None for standard domain cookie.
+  'AUTH_COOKIE_SECURE': False,    # Whether the auth cookies should be secure (https:// only).
+  'AUTH_COOKIE_HTTP_ONLY' : True, # Http only cookie flag.It's not fetch by javascript.
+  'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
+  'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
+}
