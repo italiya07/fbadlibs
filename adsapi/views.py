@@ -74,7 +74,7 @@ def loginview(request):
         }
         return response
     else:
-        r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not exist")
+        r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not exist.")
         return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
 class getAllAds(viewsets.ViewSet):
