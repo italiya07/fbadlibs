@@ -22,3 +22,9 @@ class UserSerializer(serializers.ModelSerializer):
         obj.set_password(password)
         obj.save()
         return obj
+
+    def update(self,instance, validated_data):
+        password=validated_data["password"]
+        instance.set_password(password)
+        instance.save()
+        return instance

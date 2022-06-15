@@ -1,3 +1,4 @@
+from functools import partial
 from django.shortcuts import render
 from rest_framework import viewsets
 import elasticsearch
@@ -121,6 +122,17 @@ class userManager(viewsets.ViewSet):
         user=User.objects.get(pk=pk)
         user.delete()
         r=rh.ResponseMsg(data={},error=False,msg="User Deleted")
+        return Response(r.response)
+    
+    def update(self,request,pk=None):
+        user=User.objects.get(pk=pk)
+        data=request.data
+        serializer=UserSerializer(user,data=data,partial=True)
+        if serializer.is_valid():
+            serializer.save(password=data["password"])
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="User Updated")
+            return Response(r.response)
+        r=rh.ResponseMsg(data={},error=True,msg="User updation failed")
         return Response(r.response)
 
 class contactSupport(viewsets.ViewSet):
