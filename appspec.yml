@@ -4,15 +4,10 @@ files:
   - source: /
     destination: /home/ec2-user/fbadsfinal
 
-# version: 0.0
-# os: linux
-# files:
-#   - source: /
-#     destination: /var/www/html/WordPress
+# BeforeInstall:
+  #   - location: install_dependencies.sh
+  #     timeout: 2300
 # hooks:
-#   BeforeInstall:
-#     - location: scripts/install_dependencies.sh
-#       timeout: 300
 #       runas: root
 #   AfterInstall:
 #     - location: scripts/change_permissions.sh
