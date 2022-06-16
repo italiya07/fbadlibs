@@ -13,7 +13,7 @@ djangorestframework-jwt==1.11.0
 elastic-transport==8.1.2
 elasticsearch==7.10.0
 jmespath==1.0.0
-psycopg2==2.9.3
+#psycopg2==2.9.3
 pycparser==2.21
 PyJWT==1.7.1
 python-dateutil==2.8.2
