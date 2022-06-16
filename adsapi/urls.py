@@ -23,5 +23,7 @@ router.register('support',contactSupport,basename="support")
 router.register('usermanager',userManager,basename="registeruser")
 urlpatterns = [
     path('login/', loginview, name='Login'),
+    path('forgot_password/', Forgotpasswordview , name='forgotpassword'),
+    path('change_password/<str:token>', Change_password , name='change_password'),
     path('', include(router.urls)),
 ]

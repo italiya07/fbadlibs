@@ -96,3 +96,11 @@ class User(AbstractBaseUser):
         "Is the user a admin member?"
         return self.is_superuser
 
+class ForgotPassword(models.Model):
+    email=models.ForeignKey(User,on_delete=models.CASCADE)
+    forgot_password_token=models.CharField(max_length=100)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user.email
+

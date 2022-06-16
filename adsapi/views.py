@@ -13,7 +13,6 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model, login, logout,authenticate
 from .utils import token
-from cryptography.fernet import Fernet
 import datetime
 from django.conf import settings
 from datetime import timedelta
@@ -21,6 +20,12 @@ import smtplib
 from email.mime.text import MIMEText
 from rest_framework import serializers
 from .serializer import *
+import uuid
+from django.views.decorators.csrf import ensure_csrf_cookie
+from .helpers import send_forgot_password_email
+from .forms import ChangePasswordCustomForm
+from django.contrib import messages
+
 # Create your views here.
 
 User = get_user_model()
@@ -134,6 +139,59 @@ class userManager(viewsets.ViewSet):
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="User updation failed")
         return Response(r.response)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@ensure_csrf_cookie
+def Forgotpasswordview(request):
+    email=request.data.get('email')
+    user_obj=User.objects.filter(email=email).first()
+    if not user_obj:
+        r=rh.ResponseMsg(data={},error=True,msg="Sorry, This email Id does not exist with us")
+        return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+    user_obj_token=ForgotPassword.objects.filter(user__email=user_obj.email).first()
+    token=str(uuid.uuid4())
+    if user_obj_token:
+        user_obj_token.forgot_password_token=token
+        user_obj_token.save()
+    else:
+        new_token_obj=ForgotPassword.objects.create(user=user_obj,forgot_password_token=token)
+        new_token_obj.save()
+    send_forgot_password_email(request,token,email)
+    r=rh.ResponseMsg(data={},error=False,msg="Success")
+    return Response(r.response, status=status.HTTP_200_OK)    
+    
+
+@permission_classes([AllowAny])
+@ensure_csrf_cookie
+def Change_password(request,token):
+    if request.method == 'POST':
+        form = ChangePasswordCustomForm(request.POST)
+        if form.is_valid():
+            print("hello")
+            user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+            if user_obj: 
+                password=form.cleaned_data.get("new_password2")
+                user_obj.user.set_password(password)
+                user_obj.user.save()
+                print(user_obj.user,password)
+                messages.success(request, 'Your password was successfully updated!')
+                user_obj.delete()
+                return render(request, 'success.html')
+            else:
+                return render(request, 'error.html')
+        else:
+            print(form.errors)
+            return render(request, 'error.html')
+    else:
+        user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+        if user_obj:
+            form = ChangePasswordCustomForm()
+        else:
+            return render(request, 'error.html')
+    return render(request, 'change_password.html', {
+        'form': form
+    })    
 
 class contactSupport(viewsets.ViewSet):
     def create(self,request):
