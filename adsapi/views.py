@@ -198,6 +198,33 @@ def Change_password(request,token):
         'form': form
     })    
 
+class ManageSaveAds(viewsets.ViewSet):
+    def create(self,request):
+        data=request.data
+        serializer=SaveAdsSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="Add Saved")
+            return Response(r.response)
+        r=rh.ResponseMsg(data={},error=True,msg="Add not saved")
+        return Response(r.response)
+    
+    def destroy(self,request,pk=None):
+        ad_obj=SaveAds.objects.get(id=pk)
+        ad_obj.delete()
+        r=rh.ResponseMsg(data={},error=False,msg="Add deleted successfully")
+        return Response(r.response)
+    
+    def list(self,request,pk=None):
+        user=request.data.get("user")
+        if user:
+            obj=SaveAds.objects.filter(user__id=user)
+            serializer=SaveAdsSerializer(obj,many=True)
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="All saved ads for this user")
+            return Response(r.response)
+        r=rh.ResponseMsg(data={},error=False,msg="Data not found")
+        return Response(r.response)
+
 class contactSupport(viewsets.ViewSet):
     def create(self,request):
         sender = 'parthbhanderi16@gmail.com'

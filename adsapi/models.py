@@ -1,3 +1,4 @@
+from tkinter import CASCADE
 from typing_extensions import Required
 from django.db import models
 from django.contrib.auth.models import (
@@ -103,4 +104,8 @@ class ForgotPassword(models.Model):
 
     def __str__(self):
         return self.email.email
+
+class SaveAds(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    ad=models.CharField(max_length=100)
 
