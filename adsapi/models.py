@@ -1,5 +1,3 @@
-from tkinter import CASCADE
-from typing_extensions import Required
 from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
