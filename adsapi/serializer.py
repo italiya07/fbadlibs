@@ -27,4 +27,5 @@ class UserSerializer(serializers.ModelSerializer):
         password=validated_data["password"]
         instance.set_password(password)
         instance.save()
-        return instance
+        validated_data.pop("password")
+        return super().update(instance, validated_data)

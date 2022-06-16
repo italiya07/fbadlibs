@@ -124,20 +124,23 @@ class userManager(viewsets.ViewSet):
         return Response(r.response)
 
     def destroy(self,request,pk=None):
-        user=User.objects.get(pk=pk)
+        user=User.objects.filter(id=pk).first()
         user.delete()
         r=rh.ResponseMsg(data={},error=False,msg="User Deleted")
         return Response(r.response)
     
     def update(self,request,pk=None):
-        user=User.objects.get(pk=pk)
+        user=User.objects.filter(id=pk).first()
         data=request.data
-        serializer=UserSerializer(user,data=data,partial=True)
-        if serializer.is_valid():
-            serializer.save(password=data["password"])
-            r=rh.ResponseMsg(data=serializer.data,error=False,msg="User Updated")
+        if user:
+            serializer=UserSerializer(user,data=data,partial=True)
+            if serializer.is_valid():
+                serializer.save(password=data["password"])
+                r=rh.ResponseMsg(data=serializer.data,error=False,msg="User Updated")
+                return Response(r.response)
+            r=rh.ResponseMsg(data={},error=True,msg="User updation failed")
             return Response(r.response)
-        r=rh.ResponseMsg(data={},error=True,msg="User updation failed")
+        r=rh.ResponseMsg(data={},error=True,msg="User not found")
         return Response(r.response)
 
 @api_view(['POST'])
@@ -146,16 +149,18 @@ class userManager(viewsets.ViewSet):
 def Forgotpasswordview(request):
     email=request.data.get('email')
     user_obj=User.objects.filter(email=email).first()
+    print(email,user_obj)
     if not user_obj:
         r=rh.ResponseMsg(data={},error=True,msg="Sorry, This email Id does not exist with us")
         return Response(r.response, status=status.HTTP_404_NOT_FOUND)
-    user_obj_token=ForgotPassword.objects.filter(user__email=user_obj.email).first()
+    user_obj_token=ForgotPassword.objects.filter(email__email=user_obj.email).first()
+    print(user_obj_token)
     token=str(uuid.uuid4())
     if user_obj_token:
         user_obj_token.forgot_password_token=token
         user_obj_token.save()
     else:
-        new_token_obj=ForgotPassword.objects.create(user=user_obj,forgot_password_token=token)
+        new_token_obj=ForgotPassword.objects.create(email=user_obj,forgot_password_token=token)
         new_token_obj.save()
     send_forgot_password_email(request,token,email)
     r=rh.ResponseMsg(data={},error=False,msg="Success")
@@ -172,9 +177,9 @@ def Change_password(request,token):
             user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
             if user_obj: 
                 password=form.cleaned_data.get("new_password2")
-                user_obj.user.set_password(password)
-                user_obj.user.save()
-                print(user_obj.user,password)
+                user_obj.email.set_password(password)
+                user_obj.email.save()
+                print(user_obj.email,password)
                 messages.success(request, 'Your password was successfully updated!')
                 user_obj.delete()
                 return render(request, 'success.html')
