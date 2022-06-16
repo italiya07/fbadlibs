@@ -116,6 +116,10 @@ class userManager(viewsets.ViewSet):
     def create(self,request):
         data=request.data
         serializer=UserSerializer(data=data)
+        obj=User.objects.filter(email=data["email"]).first()
+        if obj:
+            r=rh.ResponseMsg(data={},error=True,msg="User already exist")
+            return Response(r.response)
         if serializer.is_valid():
             serializer.save()
             r=rh.ResponseMsg(data=serializer.data,error=False,msg="User created")
