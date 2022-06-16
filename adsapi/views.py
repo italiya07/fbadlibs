@@ -227,5 +227,17 @@ class ManageSaveAds(viewsets.ViewSet):
 
 class contactSupport(viewsets.ViewSet):
     def create(self,request):
-        sender = 'parthbhanderi16@gmail.com'
-        receivers = 'parth.flyontechsolution@gmail.com'
+        email_sender=request.data.get('email')
+        name=request.data.get('name')
+        msg=request.data.get('message')
+
+        sender = config("From_email_fp")
+        server = smtplib.SMTP("smtp.zoho.in", 587)
+        server.starttls()
+        server.login(config("From_email_fp"),config("password_fp"))
+        MSG = f"Subject: mail from {name} :\n\nSender Name :- {name}\n\nMessage     :- {msg} \n\nreply back on {email_sender}"
+        server.sendmail("drashti.flyontechsolution@gmail.com",config("From_email_fp"),MSG)
+        server.quit()
+        
+        r=rh.ResponseMsg(data={},error=False,msg="Email sent")
+        return Response(r.response)
