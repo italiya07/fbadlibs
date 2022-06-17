@@ -47,6 +47,51 @@ es.indices.create(index=es_indice,ignore=400)
 bucket_name="fbadslib-dev"
 
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def Isalive(request): 
+    access_token = request.COOKIES.get('access_token')
+    if access_token:
+        r=rh.ResponseMsg(data={"is_alive":True},error=False,msg="success")
+        return Response(r.response,status=status.HTTP_200_OK)
+    else:
+        refresh_token = request.COOKIES.get('refresh_token')
+        if refresh_token:
+            try:
+                payload = jwt.decode(
+                    refresh_token, config("REFRESH_TOKEN_SECRET"), algorithms=['HS256'])
+            except jwt.ExpiredSignatureError:
+                response.delete_cookie("access_token")
+                response.delete_cookie("refresh_token")
+                raise exceptions.AuthenticationFailed(
+                    'expired refresh token, please login again.')
+
+            user = User.objects.filter(username=payload.get('username')).first()
+            if user is None:
+                raise exceptions.AuthenticationFailed('User not found')
+
+            if not user.is_active:
+                raise exceptions.AuthenticationFailed('user is inactive')
+            access = token.generate_access_token(user)
+            response=Response()
+            response.set_cookie(
+                            key = settings.SIMPLE_JWT['AUTH_COOKIE'], 
+                            value = access,
+                            expires = datetime.datetime.utcnow()+settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
+                            secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                            httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                            samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                        )
+            response.data={
+                    "error": False,
+                    "data":{"is_alive":True},
+                    "message": "Accesstoken Updated"
+                }
+            return response
+        else:
+            r=rh.ResponseMsg(data={"is_alive":False},error=False,msg="success")
+            return Response(r.response,status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 # @ensure_csrf_cookie
