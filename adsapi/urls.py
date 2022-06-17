@@ -27,5 +27,6 @@ urlpatterns = [
     path('logout/', logoutview , name='Logout'),
     path('forgot_password/', Forgotpasswordview , name='forgotpassword'),
     path('change_password/<str:token>', Change_password , name='change_password'),
+    path('isalive/', Isalive , name='alive'),
     path('', include(router.urls)),
 ]
