@@ -204,6 +204,7 @@ def Change_password(request,token):
     })    
 
 class ManageSaveAds(viewsets.ViewSet):
+    permission_classes=[AllowAny]
     def create(self,request):
         data=request.data
         serializer=SaveAdsSerializer(data=data)
