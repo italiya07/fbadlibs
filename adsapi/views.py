@@ -147,6 +147,7 @@ def logoutview(request):
     return response
 
 class getAllAds(viewsets.ViewSet):
+    permission_classes=[AllowAny]
     def list(self,request):
         print(es.ping())
         query={
