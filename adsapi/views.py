@@ -140,7 +140,7 @@ def logoutview(request):
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     response.data={
-        "error":True,
+        "error":False,
         "data":{},
         "message":"logout successfully!!!"
     }
