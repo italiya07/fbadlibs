@@ -25,6 +25,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from .helpers import send_forgot_password_email
 from .forms import ChangePasswordCustomForm
 from django.contrib import messages
+import jwt
 
 # Create your views here.
 
@@ -66,7 +67,7 @@ def Isalive(request):
                 raise exceptions.AuthenticationFailed(
                     'expired refresh token, please login again.')
 
-            user = User.objects.filter(username=payload.get('username')).first()
+            user = User.objects.filter(email=payload.get('email')).first()
             if user is None:
                 raise exceptions.AuthenticationFailed('User not found')
 
