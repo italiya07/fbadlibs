@@ -24,6 +24,7 @@ router.register('usermanager',userManager,basename="registeruser")
 router.register('saveadmanager',ManageSaveAds,basename="ManageSaveAds")
 urlpatterns = [
     path('login/', loginview, name='Login'),
+    path('logout/', logoutview , name='Logout'),
     path('forgot_password/', Forgotpasswordview , name='forgotpassword'),
     path('change_password/<str:token>', Change_password , name='change_password'),
     path('', include(router.urls)),

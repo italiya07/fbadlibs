@@ -133,6 +133,19 @@ def loginview(request):
         r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not exist.")
         return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['GET'])
+def logoutview(request):
+    response = Response()
+    logout(request)
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    response.data={
+        "error":True,
+        "data":{},
+        "message":"logout successfully!!!"
+    }
+    return response
+
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
         print(es.ping())
