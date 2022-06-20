@@ -32,6 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 class SaveAdsSerializer(serializers.ModelSerializer):
+    user=UserSerializer(read_only=True)
     class Meta:
         model=SaveAds
         fields="__all__"

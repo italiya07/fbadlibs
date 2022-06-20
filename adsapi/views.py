@@ -1,7 +1,6 @@
 from functools import partial
 from django.shortcuts import render
 from rest_framework import viewsets
-import elasticsearch
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
 from rest_framework.response import Response
@@ -264,16 +263,19 @@ def Change_password(request,token):
     })    
 
 class ManageSaveAds(viewsets.ViewSet):
-    permission_classes=[AllowAny]
+    # permission_classes=[AllowAny]
     def create(self,request):
         data=request.data
+        user=request.user
+        print(user)
         serializer=SaveAdsSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=user)
             r=rh.ResponseMsg(data=serializer.data,error=False,msg="Add Saved")
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="Add not saved")
         return Response(r.response)
+
     
     def destroy(self,request,pk=None):
         ad_obj=SaveAds.objects.get(id=pk)
@@ -282,9 +284,9 @@ class ManageSaveAds(viewsets.ViewSet):
         return Response(r.response)
     
     def list(self,request,pk=None):
-        user=request.data.get("user")
+        user=request.user
         if user:
-            obj=SaveAds.objects.filter(user__id=user)
+            obj=SaveAds.objects.filter(user__id=user.id)
             serializer=SaveAdsSerializer(obj,many=True)
             r=rh.ResponseMsg(data=serializer.data,error=False,msg="All saved ads for this user")
             return Response(r.response)
