@@ -207,6 +207,10 @@ class userManager(viewsets.ViewSet):
         r=rh.ResponseMsg(data={},error=True,msg="User not found")
         return Response(r.response)
 
+    def list(self,request):
+        r=rh.ResponseMsg(data={"first_name":request.user.first_name,"last_name":request.user.last_name,"email":request.user.email},error=True,msg="User not found")
+        return Response(r.response)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @ensure_csrf_cookie
