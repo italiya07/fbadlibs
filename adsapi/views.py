@@ -271,16 +271,16 @@ class ManageSaveAds(viewsets.ViewSet):
         serializer=SaveAdsSerializer(data=data)
         if serializer.is_valid():
             serializer.save(user=user)
-            r=rh.ResponseMsg(data=serializer.data,error=False,msg="Add Saved")
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="Ad Saved")
             return Response(r.response)
-        r=rh.ResponseMsg(data={},error=True,msg="Add not saved")
+        r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
         return Response(r.response)
 
     
     def destroy(self,request,pk=None):
         ad_obj=SaveAds.objects.get(id=pk)
         ad_obj.delete()
-        r=rh.ResponseMsg(data={},error=False,msg="Add deleted successfully")
+        r=rh.ResponseMsg(data={},error=False,msg="Ad deleted successfully")
         return Response(r.response)
     
     def list(self,request,pk=None):
