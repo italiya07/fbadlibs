@@ -197,7 +197,7 @@ class userManager(viewsets.ViewSet):
     def update(self,request,pk=None):
         user=User.objects.filter(id=pk).first()
         data=request.data
-
+        
         if "c_password" in request.data.keys():
             if user.check_password(data["c_password"]):
                 serializer=UserSerializer(user,data=data,partial=True)
