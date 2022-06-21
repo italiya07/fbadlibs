@@ -25,6 +25,7 @@ from .helpers import send_forgot_password_email
 from .forms import ChangePasswordCustomForm
 from django.contrib import messages
 import jwt
+import json
 
 # Create your views here.
 
@@ -196,19 +197,30 @@ class userManager(viewsets.ViewSet):
     def update(self,request,pk=None):
         user=User.objects.filter(id=pk).first()
         data=request.data
-        if user:
+
+        if "c_password" in request.data.keys():
+            if user.check_password(data["c_password"]):
+                serializer=UserSerializer(user,data=data,partial=True)
+                if serializer.is_valid():
+                    serializer.save(password=data["n_password"])
+                    r=rh.ResponseMsg(data=serializer.data,error=False,msg="Password Updated")
+                    return Response(r.response)
+            r=rh.ResponseMsg(data={},error=True,msg="Password mismatch")
+            return Response(r.response)
+        else:
             serializer=UserSerializer(user,data=data,partial=True)
             if serializer.is_valid():
-                serializer.save(password=data["password"])
+                serializer.save()
                 r=rh.ResponseMsg(data=serializer.data,error=False,msg="User Updated")
                 return Response(r.response)
-            r=rh.ResponseMsg(data={},error=True,msg="User updation failed")
-            return Response(r.response)
-        r=rh.ResponseMsg(data={},error=True,msg="User not found")
+    
+        r=rh.ResponseMsg(data={},error=True,msg="Error in updation")
         return Response(r.response)
 
     def list(self,request):
-        r=rh.ResponseMsg(data={"first_name":request.user.first_name,"last_name":request.user.last_name,"email":request.user.email},error=True,msg="User not found")
+        user=User.objects.get(id=request.user.id)
+        serializer=UserSerializer(user)
+        r=rh.ResponseMsg(data=serializer.data,error=True,msg="User not found")
         return Response(r.response)
 
 @api_view(['POST'])

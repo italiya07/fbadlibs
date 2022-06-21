@@ -25,10 +25,11 @@ class UserSerializer(serializers.ModelSerializer):
         return obj
 
     def update(self,instance, validated_data):
-        password=validated_data["password"]
-        instance.set_password(password)
-        instance.save()
-        validated_data.pop("password")
+        if "password" in validated_data:
+            password=validated_data["password"]
+            instance.set_password(password)
+            instance.save()
+            validated_data.pop("password")
         return super().update(instance, validated_data)
 
 class SaveAdsSerializer(serializers.ModelSerializer):
