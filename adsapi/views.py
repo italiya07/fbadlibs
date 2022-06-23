@@ -1,5 +1,6 @@
 from functools import partial
 from django.shortcuts import render
+from elastic_transport import Serializer
 from rest_framework import viewsets
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
@@ -280,31 +281,109 @@ def Change_password(request,token):
 
 class ManageSaveAds(viewsets.ViewSet):
     # permission_classes=[AllowAny]
+    # def create(self,request):
+    #     data=request.data
+    #     user=request.user
+    #     print(user)
+    #     serializer=SaveAdsSerializer(data=data)
+    #     print("seri......", serializer)
+    #     if serializer.is_valid():
+    #         print("seri......valid..", serializer.validated_data)
+    #         serializer.save(user=user)
+    #         r=rh.ResponseMsg(data=serializer.data,error=False,msg="Ad Saved")
+    #         return Response(r.response)
+    #     r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
+    #     return Response(r.response)
+
     def create(self,request):
         data=request.data
         user=request.user
         print(user)
         serializer=SaveAdsSerializer(data=data)
+        print("seri......", serializer)
+
+    
+        print(es.ping())
+        query={
+            "size": 10000,
+            "query": {
+                "match": {
+                    "adID" : data["ad"]
+                }
+            }
+        }
+
+        res=es.search(index=es_indice,body=query)
+        add=[]
+        fdata=[]
+        if res["hits"]["hits"]:
+            for d in res["hits"]["hits"]:
+                add.append(d["_source"])
         if serializer.is_valid():
+            print("seri......valid..", serializer.validated_data)
             serializer.save(user=user)
-            r=rh.ResponseMsg(data=serializer.data,error=False,msg="Ad Saved")
+            fdata.append({"ad_detail":add})
+            # fdata.append(serializer.data)
+            fdata.append({"id":serializer.data["id"], "ad":serializer.data["ad"]})
+            r=rh.ResponseMsg(data=fdata,error=False,msg="Ad Saved")
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
         return Response(r.response)
-
+ 
+ 
     
     def destroy(self,request,pk=None):
         ad_obj=SaveAds.objects.get(id=pk)
+        add=[]
+        query={
+                            "size": 10000,
+                            "query": {
+                                "match": {
+                                    "adID" : ad_obj.ad
+                                }
+                            }
+                        }
+        res=es.search(index=es_indice,body=query)
+        if res["hits"]["hits"]:
+            add.append({"ad_detail":res["hits"]["hits"][0]["_source"], "deleted_id":ad_obj.id})
+        id = ad_obj.id
         ad_obj.delete()
-        r=rh.ResponseMsg(data={},error=False,msg="Ad deleted successfully")
+        r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
         return Response(r.response)
     
+    # def list(self,request,pk=None):
+    #     user=request.user
+    #     if user:
+    #         obj=SaveAds.objects.filter(user__id=user.id)
+    #         serializer=SaveAdsSerializer(obj,many=True)
+    #         r=rh.ResponseMsg(data=serializer.data,error=False,msg="All saved ads for this user")
+    #         return Response(r.response)
+    #     r=rh.ResponseMsg(data={},error=False,msg="Data not found")
+    #     return Response(r.response)
+
     def list(self,request,pk=None):
         user=request.user
         if user:
             obj=SaveAds.objects.filter(user__id=user.id)
             serializer=SaveAdsSerializer(obj,many=True)
-            r=rh.ResponseMsg(data=serializer.data,error=False,msg="All saved ads for this user")
+            for i in serializer.data:
+                query={
+                            "size": 10000,
+                            "query": {
+                                "match": {
+                                    "adID" : i["ad"]
+                                }
+                            }
+                        }
+                res=es.search(index=es_indice,body=query)
+                add=[]
+                fdata=[]
+                if res["hits"]["hits"]:
+                    for d in res["hits"]["hits"]:
+                        add.append({"ad_detail":d["_source"], "id":i["id"]})
+
+            
+            r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=False,msg="Data not found")
         return Response(r.response)
