@@ -198,7 +198,7 @@ class userManager(viewsets.ViewSet):
     def update(self,request,pk=None):
         user=User.objects.filter(id=pk).first()
         data=request.data
-        
+
         if "c_password" in request.data.keys():
             if user.check_password(data["c_password"]):
                 serializer=UserSerializer(user,data=data,partial=True)
@@ -221,7 +221,7 @@ class userManager(viewsets.ViewSet):
     def list(self,request):
         user=User.objects.get(id=request.user.id)
         serializer=UserSerializer(user)
-        r=rh.ResponseMsg(data=serializer.data,error=True,msg="User not found")
+        r=rh.ResponseMsg(data=serializer.data,error=False,msg="User found")
         return Response(r.response)
 
 @api_view(['POST'])
