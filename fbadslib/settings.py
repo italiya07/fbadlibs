@@ -171,7 +171,7 @@ REST_FRAMEWORK={
          ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'adsapi.utils.authentication.SafeJWTAuthentication',
-    )
+    ),
 }
 
 AUTH_USER_MODEL = 'adsapi.User'

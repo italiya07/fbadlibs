@@ -22,6 +22,7 @@ router.register('allads',getAllAds,basename="AllAds")
 router.register('support',contactSupport,basename="support")
 router.register('usermanager',userManager,basename="registeruser")
 router.register('saveadmanager',ManageSaveAds,basename="ManageSaveAds")
+router.register('suballads', subAllAds, basename="subAllAds" )
 urlpatterns = [
     path('login/', loginview, name='Login'),
     path('logout/', logoutview , name='Logout'),

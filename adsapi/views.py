@@ -380,7 +380,8 @@ class ManageSaveAds(viewsets.ViewSet):
                 fdata=[]
                 if res["hits"]["hits"]:
                     for d in res["hits"]["hits"]:
-                        add.append({"ad_detail":d["_source"], "id":i["id"]})
+                        d["_source"]["id"]=i["id"]
+                        add.append(d["_source"])
 
             
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
@@ -403,4 +404,28 @@ class contactSupport(viewsets.ViewSet):
         server.quit()
         
         r=rh.ResponseMsg(data={},error=False,msg="Email sent")
+        return Response(r.response)
+
+
+class subAllAds(viewsets.ViewSet):
+    permission_classes=[AllowAny]
+    def list(self,request):
+        ad_name = request.data.get('ad_name') 
+        query={
+            "size": 10000,
+            "query": {
+                "match": {
+                    "pageInfo.name": ad_name
+                }
+            }
+        }
+
+        res=es.search(index=es_indice,body=query)
+        data=[]
+        if res["hits"]["hits"]:
+            for d in res["hits"]["hits"]:
+                data.append(d["_source"])
+            r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
+            return Response(r.response)
+        r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
         return Response(r.response)
