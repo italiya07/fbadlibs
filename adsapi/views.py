@@ -371,6 +371,11 @@ class ManageSaveAds(viewsets.ViewSet):
                 add=[]
                 if res["hits"]["hits"]:
                     for d in res["hits"]["hits"]:
+                        url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                        pre_signed_url = client.generate_presigned_url('get_object',
+                                                        Params={'Bucket': bucket_name,'Key': url},
+                                                        ExpiresIn=3600*24)
+                        d["_source"]["bucketMediaURL"]=pre_signed_url
                         d["_source"]["id"]=i["id"]
                         add.append(d["_source"])
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
