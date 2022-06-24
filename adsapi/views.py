@@ -298,12 +298,7 @@ class ManageSaveAds(viewsets.ViewSet):
     def create(self,request):
         data=request.data
         user=request.user
-        print(user)
         serializer=SaveAdsSerializer(data=data)
-        print("seri......", serializer)
-
-    
-        print(es.ping())
         query={
             "size": 10000,
             "query": {
@@ -312,7 +307,6 @@ class ManageSaveAds(viewsets.ViewSet):
                 }
             }
         }
-
         res=es.search(index=es_indice,body=query)
         add=[]
         fdata=[]
@@ -320,10 +314,8 @@ class ManageSaveAds(viewsets.ViewSet):
             for d in res["hits"]["hits"]:
                 add.append(d["_source"])
         if serializer.is_valid():
-            print("seri......valid..", serializer.validated_data)
             serializer.save(user=user)
             fdata.append({"ad_detail":add})
-            # fdata.append(serializer.data)
             fdata.append({"id":serializer.data["id"], "ad":serializer.data["ad"]})
             r=rh.ResponseMsg(data=fdata,error=False,msg="Ad Saved")
             return Response(r.response)
@@ -336,17 +328,17 @@ class ManageSaveAds(viewsets.ViewSet):
         ad_obj=SaveAds.objects.get(id=pk)
         add=[]
         query={
-                            "size": 10000,
-                            "query": {
-                                "match": {
-                                    "adID" : ad_obj.ad
-                                }
-                            }
-                        }
+                "size": 10000,
+                "query": {
+                    "match": {
+                        "adID" : ad_obj.ad
+                    }
+                }
+            }
         res=es.search(index=es_indice,body=query)
         if res["hits"]["hits"]:
-            add.append({"ad_detail":res["hits"]["hits"][0]["_source"], "deleted_id":ad_obj.id})
-        id = ad_obj.id
+            res=["hits"]["hits"][0]["_source"]["deleted_id"]=ad_obj.id
+            add.append(res["hits"]["hits"][0]["_source"])
         ad_obj.delete()
         r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
         return Response(r.response)
@@ -377,13 +369,10 @@ class ManageSaveAds(viewsets.ViewSet):
                         }
                 res=es.search(index=es_indice,body=query)
                 add=[]
-                fdata=[]
                 if res["hits"]["hits"]:
                     for d in res["hits"]["hits"]:
                         d["_source"]["id"]=i["id"]
                         add.append(d["_source"])
-
-            
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=False,msg="Data not found")
