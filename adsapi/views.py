@@ -337,7 +337,7 @@ class ManageSaveAds(viewsets.ViewSet):
             }
         res=es.search(index=es_indice,body=query)
         if res["hits"]["hits"]:
-            res=["hits"]["hits"][0]["_source"]["deleted_id"]=ad_obj.id
+            res["hits"]["hits"][0]["_source"]["deleted_id"]=ad_obj.id
             add.append(res["hits"]["hits"][0]["_source"])
         ad_obj.delete()
         r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
