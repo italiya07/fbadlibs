@@ -355,6 +355,7 @@ class ManageSaveAds(viewsets.ViewSet):
 
     def list(self,request,pk=None):
         user=request.user
+        add=[]
         if user:
             obj=SaveAds.objects.filter(user__id=user.id)
             serializer=SaveAdsSerializer(obj,many=True)
@@ -367,8 +368,7 @@ class ManageSaveAds(viewsets.ViewSet):
                                 }
                             }
                         }
-                res=es.search(index=es_indice,body=query)
-                add=[]
+                res=es.search(index=es_indice,body=query) 
                 if res["hits"]["hits"]:
                     for d in res["hits"]["hits"]:
                         url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
