@@ -403,8 +403,9 @@ class contactSupport(viewsets.ViewSet):
 
 class subAllAds(viewsets.ViewSet):
     permission_classes=[AllowAny]
-    def list(self,request,pk):
-        ad_name = request.data.get('ad_name') 
+    def post(self,request,*args):
+        ad_name = request.data.get('ad_name')
+        print(args) 
         query={
             "size": 10000,
             "query": {
