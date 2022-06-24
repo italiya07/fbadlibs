@@ -404,12 +404,12 @@ class contactSupport(viewsets.ViewSet):
 class subAllAds(viewsets.ViewSet):
     permission_classes=[AllowAny]
     def list(self,request,pk):
-        ad_name = pk 
+        ad_name = request.data.get('ad_name') 
         query={
             "size": 10000,
             "query": {
                 "match": {
-                    "pageInfo.name.keyword": ad_name
+                    "pageInfo.name": ad_name
                 }
             }
         }
