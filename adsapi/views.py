@@ -167,20 +167,21 @@ class getAllAds(viewsets.ViewSet):
 
         res=es.search(index=es_indice,body=query)
         data=[]
-        final_data=[]
-
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
                 pre_signed_url = client.generate_presigned_url('get_object',
                                                   Params={'Bucket': bucket_name,'Key': url},
                                                   ExpiresIn=3600*24)
+                if  d["_source"]["adID"] in ad_ids:
+                    d["_source"]["is_saved"]=True
+                else:
+                    d["_source"]["is_saved"]=False
                 d["_source"]["bucketMediaURL"]=pre_signed_url
                 data.append(d["_source"])
-    
-            final_data.append(data)
-            final_data.append({"saved_ads":ad_ids})
-            r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
+
+            # data.append({"saved_ads":ad_ids})
+            r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
             return Response(r.response)
 
         r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
