@@ -157,7 +157,7 @@ class getAllAds(viewsets.ViewSet):
         ad_ids=[]
         for i in serializer.data:
             ad_ids.append(i["ad"])
-            
+
         query={
             "size": 10000,
             "query": {
@@ -167,6 +167,8 @@ class getAllAds(viewsets.ViewSet):
 
         res=es.search(index=es_indice,body=query)
         data=[]
+        final_data=[]
+
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
@@ -175,9 +177,10 @@ class getAllAds(viewsets.ViewSet):
                                                   ExpiresIn=3600*24)
                 d["_source"]["bucketMediaURL"]=pre_signed_url
                 data.append(d["_source"])
-
-            data.append({"saved_ads":ad_ids})
-            r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
+    
+            final_data.append(data)
+            final_data.append({"saved_ads":ad_ids})
+            r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
 
         r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
