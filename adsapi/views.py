@@ -178,7 +178,7 @@ class getAllAds(viewsets.ViewSet):
                 d["_source"]["bucketMediaURL"]=pre_signed_url
                 data.append(d["_source"])
     
-            final_data.append(data)
+            final_data.append({"ad_details":data})
             final_data.append({"saved_ads":ad_ids})
             r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
