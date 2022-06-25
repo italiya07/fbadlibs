@@ -150,14 +150,7 @@ def logoutview(request):
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
         print(es.ping())
-        
         user_obj=request.user
-        obj=SaveAds.objects.filter(user__id=user_obj.id).all()
-        serializer=SaveAdsSerializer(obj,many=True)
-        ad_ids=[]
-        for i in serializer.data:
-            ad_ids.append(i["ad"])
-
         query={
             "size": 10000,
             "query": {
@@ -173,11 +166,15 @@ class getAllAds(viewsets.ViewSet):
                 pre_signed_url = client.generate_presigned_url('get_object',
                                                   Params={'Bucket': bucket_name,'Key': url},
                                                   ExpiresIn=3600*24)
-                if  d["_source"]["adID"] in ad_ids:
-                    d["_source"]["is_saved"]=True
+            
+                saved_ad_obj=SaveAds.objects.filter(user__id=user_obj.id, ad=d["_source"]["adID"]).first()
+                print(saved_ad_obj)
+                d["_source"]["bucketMediaURL"]=pre_signed_url                
+
+                if saved_ad_obj:
+                    d["_source"]["saved_id"]=saved_ad_obj.id
                 else:
-                    d["_source"]["is_saved"]=False
-                d["_source"]["bucketMediaURL"]=pre_signed_url
+                    d["_source"]["saved_id"]=None
                 data.append(d["_source"])
 
             # data.append({"saved_ads":ad_ids})
