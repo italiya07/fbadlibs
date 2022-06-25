@@ -167,7 +167,7 @@ class getAllAds(viewsets.ViewSet):
 
         res=es.search(index=es_indice,body=query)
         data=[]
-        final_data={}
+        final_data=[]
 
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
@@ -178,8 +178,8 @@ class getAllAds(viewsets.ViewSet):
                 d["_source"]["bucketMediaURL"]=pre_signed_url
                 data.append(d["_source"])
     
-            final_data["ad_details"]=data
-            final_data["saved_ads"]=ad_ids
+            final_data.append(data)
+            final_data.append({"saved_ads":ad_ids})
             r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
 
