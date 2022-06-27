@@ -149,7 +149,6 @@ def logoutview(request):
 
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
-        print(es.ping())
         user_obj=request.user
         query={
             "size": 10000,
@@ -161,7 +160,7 @@ class getAllAds(viewsets.ViewSet):
         ad_ids=[]
         saved_ad_obj=SaveAds.objects.filter(user__id=user_obj.id).all()
         serializer=SaveAdsSerializer(saved_ad_obj,many=True)
-        for i in serializer:
+        for i in serializer.data:
             ad_ids.append(i["ad"])
 
         res=es.search(index=es_indice,body=query)
@@ -184,7 +183,7 @@ class getAllAds(viewsets.ViewSet):
 
             final_data.append({"saved_ads":ad_ids})
             final_data.append({"all_ads": data})
-            r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
+            r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
 
         r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
