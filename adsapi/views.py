@@ -320,15 +320,21 @@ class ManageSaveAds(viewsets.ViewSet):
         }
         res=es.search(index=es_indice,body=query)
         add=[]
-        fdata=[]
+        # fdata=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
+                url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                pre_signed_url = client.generate_presigned_url('get_object',
+                                                  Params={'Bucket': bucket_name,'Key': url},
+                                                  ExpiresIn=3600*24)
+                d["_source"]["bucketMediaURL"]=pre_signed_url
                 add.append(d["_source"])
         if serializer.is_valid():
             serializer.save(user=user)
-            fdata.append({"ad_detail":add})
-            fdata.append({"id":serializer.data["id"], "ad":serializer.data["ad"]})
-            r=rh.ResponseMsg(data=fdata,error=False,msg="Ad Saved")
+            d["_source"]["id"]=serializer.data["id"]
+            # fdata.append({"ad_detail":add})
+            # fdata.append({"id":serializer.data["id"], "ad":serializer.data["ad"]})
+            r=rh.ResponseMsg(data=add,error=False,msg="Ad Saved")
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
         return Response(r.response)
