@@ -158,8 +158,15 @@ class getAllAds(viewsets.ViewSet):
             }
         }
 
+        ad_ids=[]
+        saved_ad_obj=SaveAds.objects.filter(user__id=user_obj.id).all()
+        serializer=SaveAdsSerializer(saved_ad_obj,many=True)
+        for i in serializer:
+            ad_ids.append(i["ad"])
+
         res=es.search(index=es_indice,body=query)
         data=[]
+        final_data=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
@@ -167,17 +174,16 @@ class getAllAds(viewsets.ViewSet):
                                                   Params={'Bucket': bucket_name,'Key': url},
                                                   ExpiresIn=3600*24)
             
-                saved_ad_obj=SaveAds.objects.filter(user__id=user_obj.id, ad=d["_source"]["adID"]).first()
-                print(saved_ad_obj)
                 d["_source"]["bucketMediaURL"]=pre_signed_url                
 
-                if saved_ad_obj:
-                    d["_source"]["saved_id"]=saved_ad_obj.id
-                else:
-                    d["_source"]["saved_id"]=None
+                # if saved_ad_obj:
+                #     d["_source"]["saved_id"]=saved_ad_obj.id
+                # else:
+                #     d["_source"]["saved_id"]=None
                 data.append(d["_source"])
 
-            # data.append({"saved_ads":ad_ids})
+            final_data.append({"saved_ads":ad_ids})
+            final_data.append({"all_ads": data})
             r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
             return Response(r.response)
 
