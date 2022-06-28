@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'bootstrap5',
     'rest_framework',
     'adsapi',
-    'corsheaders'
+    'corsheaders',
+    'fbadslibscraperapp'
 ]
 
 MIDDLEWARE = [
