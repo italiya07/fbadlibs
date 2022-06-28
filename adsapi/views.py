@@ -348,7 +348,7 @@ class ManageSaveAds(viewsets.ViewSet):
     
     def destroy(self,request,pk=None):
         user_obj=request.user
-        ad_obj=SaveAds.objects.filter(user__id=user_obj.id,ad=pk).first()
+        ad_obj=SaveAds.objects.get(user__id=user_obj.id,ad=pk)
         add=[]
         query={
                 "size": 10000,
@@ -435,7 +435,7 @@ class subAllAds(viewsets.ViewSet):
                 }
             }
         }
-
+ 
         res=es.search(index=es_indice,body=query)
         data=[]
         if res["hits"]["hits"]:
