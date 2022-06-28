@@ -24,76 +24,76 @@ class FbAdLibAdSpider:
         s3.put_object(Bucket=self.bucket_name, Key=ss_name, Body=open(screenshot_path, "rb"))
     
     def get_chrome_driver_instance(self):
-        # options = webdriver.ChromeOptions()
-        # options.binary_location = '/opt/chrome/chrome'
-        # options.add_argument('--headless')
-        # options.add_argument('--no-sandbox')
-        # options.add_argument("--disable-gpu")
-        # options.add_argument('--window-size=1440x626')
-        # options.add_argument("--disable-extensions")
-        # options.add_argument("--single-process")
-        # options.add_argument("--disable-dev-shm-usage")
-        # options.add_argument("--disable-dev-tools")
-        # options.add_argument('--ignore-certificate-errors')
-        # options.add_argument('--allow-running-insecure-content')
-        # options.add_argument("--no-zygote")
-        # options.add_experimental_option("useAutomationExtension", False)  # Adding Argument to Not Use Automation Extension
-        # options.add_experimental_option("excludeSwitches", ["enable-automation"])  # Excluding enable-automation Switch
-        # options.add_argument("disable-popup-blocking")
-        # options.add_argument("disable-notifications")
-        # self.proxyToBeUsed=random.choice(self.proxylist)
-        # options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
+        options = webdriver.ChromeOptions()
+        options.binary_location = '/opt/chrome-linux/chrome'
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument("--disable-gpu")
+        options.add_argument('--window-size=1440x626')
+        options.add_argument("--disable-extensions")
+        options.add_argument("--single-process")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-dev-tools")
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--allow-running-insecure-content')
+        options.add_argument("--no-zygote")
+        options.add_experimental_option("useAutomationExtension", False)  # Adding Argument to Not Use Automation Extension
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])  # Excluding enable-automation Switch
+        options.add_argument("disable-popup-blocking")
+        options.add_argument("disable-notifications")
+        self.proxyToBeUsed=random.choice(self.proxylist)
+        options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
 
-        # # software_names     = [SoftwareName.CHROME.value]
-        # # operating_systems  = [OperatingSystem.LINUX.value]   
-        # # user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems)
-        # # user_agent = user_agent_rotator.get_random_user_agent()
-        # # options.add_argument(f'user-agent={user_agent}')
+        # software_names     = [SoftwareName.CHROME.value]
+        # operating_systems  = [OperatingSystem.LINUX.value]   
+        # user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems)
+        # user_agent = user_agent_rotator.get_random_user_agent()
+        # options.add_argument(f'user-agent={user_agent}')
 
-        # print(self.proxyToBeUsed)
-        # driver = webdriver.Chrome(executable_path="/opt/chromedriver",options=options)
-        # return driver
-        chrome_options = webdriver.ChromeOptions()
-        prefs = {"profile.managed_default_content_settings.images": 2}
-        chrome_options.add_experimental_option("prefs", prefs)
-        driver = webdriver.Chrome(ChromeDriverManager().install())
+        print(self.proxyToBeUsed)
+        driver = webdriver.Chrome(executable_path="/opt/chromedriver",options=options)
         return driver
+        # chrome_options = webdriver.ChromeOptions()
+        # prefs = {"profile.managed_default_content_settings.images": 2}
+        # chrome_options.add_experimental_option("prefs", prefs)
+        # driver = webdriver.Chrome(ChromeDriverManager().install())
+        # return driver
 
-    def polling_for_driver(self, fbAdlibItem):
-        for count in range(self.maxPollingCount):
-            print(count)
-            try:
-                adUrl = "https://www.facebook.com/ads/library/?id=" + fbAdlibItem["adID"]
-                # adUrl = "https://www.google.com/"
-                print("adURL scrapped :- ", adUrl)
-                detailedDriver  = self.get_chrome_driver_instance()
-                detailedDriver.get(adUrl)
-                element = WebDriverWait(detailedDriver, 60).until(EC.presence_of_element_located((By.XPATH, "//div [contains( text(), 'See ad details')]")))
-                print("Working !!!!")
-                # time.sleep(120)
-                # self.takeScreenShot(detailedDriver, 'adDriverSuccess' + str(count) + '.png')
-                print('Image Saved in S3 bucket!!!')
-                # time.sleep(120)
-                # self.takeScreenShot(detailedDriver, 'adDriver' + str(count) + '.png')
-                # screenshot_filename = "adsScraper.png"
-                # screenshot_path = "/tmp/" + screenshot_filename
-                # detailedDriver.save_screenshot(screenshot_path)
-                # s3 = boto3.client("s3")
-                # s3.put_object(Bucket="fbadlibtest", Key=str(count) + '.png', Body=open(screenshot_path, "rb"))
-                return detailedDriver
-            except Exception as ex:
-                print("Not Working just remove the IP from list and proceed for next")
-                # self.takeScreenShot(detailedDriver, str(fbAdlibItem["adID"]) + "_Failure_" +  str(count) + '.png')
-                # print('Image Saved in S3 bucket!!!')
-                self.proxylist.remove(self.proxyToBeUsed)
-                detailedDriver.quit()
-                print(ex)
-                # pass
-            finally:
-                # self.takeScreenShot(detailedDriver, 'adDriverFinal' + str(count) + '.png')
-                # detailedDriver.quit()
-                # break
-                pass
+    # def polling_for_driver(self, fbAdlibItem):
+    #     for count in range(self.maxPollingCount):
+    #         print(count)
+    #         try:
+    #             adUrl = "https://www.facebook.com/ads/library/?id=" + fbAdlibItem["adID"]
+    #             # adUrl = "https://www.google.com/"
+    #             print("adURL scrapped :- ", adUrl)
+    #             detailedDriver  = self.get_chrome_driver_instance()
+    #             detailedDriver.get(adUrl)
+    #             element = WebDriverWait(detailedDriver, 60).until(EC.presence_of_element_located((By.XPATH, "//div [contains( text(), 'See ad details')]")))
+    #             print("Working !!!!")
+    #             # time.sleep(120)
+    #             # self.takeScreenShot(detailedDriver, 'adDriverSuccess' + str(count) + '.png')
+    #             print('Image Saved in S3 bucket!!!')
+    #             # time.sleep(120)
+    #             # self.takeScreenShot(detailedDriver, 'adDriver' + str(count) + '.png')
+    #             # screenshot_filename = "adsScraper.png"
+    #             # screenshot_path = "/tmp/" + screenshot_filename
+    #             # detailedDriver.save_screenshot(screenshot_path)
+    #             # s3 = boto3.client("s3")
+    #             # s3.put_object(Bucket="fbadlibtest", Key=str(count) + '.png', Body=open(screenshot_path, "rb"))
+    #             return detailedDriver
+    #         except Exception as ex:
+    #             print("Not Working just remove the IP from list and proceed for next")
+    #             # self.takeScreenShot(detailedDriver, str(fbAdlibItem["adID"]) + "_Failure_" +  str(count) + '.png')
+    #             # print('Image Saved in S3 bucket!!!')
+    #             self.proxylist.remove(self.proxyToBeUsed)
+    #             detailedDriver.quit()
+    #             print(ex)
+    #             # pass
+    #         finally:
+    #             # self.takeScreenShot(detailedDriver, 'adDriverFinal' + str(count) + '.png')
+    #             # detailedDriver.quit()
+    #             # break
+    #             pass
 
 
     def process_ad(self, fbAdlibItem):

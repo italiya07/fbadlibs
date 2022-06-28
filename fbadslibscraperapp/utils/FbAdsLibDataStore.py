@@ -13,7 +13,7 @@ class FbAdsLibDataStore:
         host = 'search-fbadslib-dev-vtocnlf6uhf7y24wy53x6cz2u4.us-east-1.es.amazonaws.com'
         service = 'es'
         self.bucket_name = "fbadslib-dev"
-        self.index_name = 'fbadslib-dev'
+        self.index_name = 'fbadslib-dev-test'
         
         credentials = boto3.Session().get_credentials()
 
