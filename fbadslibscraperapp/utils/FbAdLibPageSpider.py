@@ -48,7 +48,7 @@ class FbAdLibPageSpider:
         options.add_argument("disable-notifications")
 
         self.proxyToBeUsed=random.choice(self.proxylist)
-        # options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
+        options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
 
         logger.info(f'Proxy To be Used : {self.proxyToBeUsed}')
 
