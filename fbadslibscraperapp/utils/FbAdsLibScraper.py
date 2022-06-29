@@ -4,6 +4,9 @@ from fbadslibscraperapp.utils.FbAdLibAdSpider import *
 from fbadslibscraperapp.utils.FbAdLibAdDataCleaner import *
 from fbadslibscraperapp.utils.FbAdsLibDataStore import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 class FbAdsLibScraper:
 
     def __init__(self, proxyUrls, fbadslibpages):
@@ -33,7 +36,14 @@ class FbAdsLibScraper:
 
     def startPageScraper(self, combinedProxyPage):
         fbAdLibPageSpider = FbAdLibPageSpider(combinedProxyPage["activeProxies"])
-        fbAdLibItemList = fbAdLibPageSpider.process_page(combinedProxyPage["pageURL"])
+        try:
+            fbAdLibItemList = fbAdLibPageSpider.process_page(combinedProxyPage["pageURL"])
+        except Exception as ex:
+            print("Something not working at startPageScraper!!!")
+            print(ex)
+            logger.info(f'Exception At startPageScraper')
+            logger.info(ex)
+        
 
         combinedProxyAdList = []
         for fbAdLibItem in fbAdLibItemList:
@@ -50,15 +60,22 @@ class FbAdsLibScraper:
             result = exe.map(self.startAdScraper,combinedProxyAdList)
         
     def startScraper(self):
+        try:
+            combinedProxyPageList = []
+            for page in self.scraperInput["fbadslibpages"]:
+                pageProxies = {}
+                pageProxies["activeProxies"] = self.scraperInput["proxyUrls"]
+                pageProxies["pageURL"]       = page
+                combinedProxyPageList.append(pageProxies)
 
-        combinedProxyPageList = []
-        for page in self.scraperInput["fbadslibpages"]:
-            pageProxies = {}
-            pageProxies["activeProxies"] = self.scraperInput["proxyUrls"]
-            pageProxies["pageURL"]       = page
-            combinedProxyPageList.append(pageProxies)
+            result = []
+            with ThreadPoolExecutor(max_workers=2) as exe:
+                result = exe.map(self.startPageScraper,combinedProxyPageList)
+        except Exception as ex:
+            print("Something not working startScraper!!!")
+            print(ex)
+            raise Exception(ex)
 
-        result = []
-        with ThreadPoolExecutor(max_workers=2) as exe:
-            result = exe.map(self.startPageScraper,combinedProxyPageList)
+
+        
 

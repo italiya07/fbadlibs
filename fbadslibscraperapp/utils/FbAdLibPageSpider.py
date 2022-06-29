@@ -90,9 +90,12 @@ class FbAdLibPageSpider:
         print("Page URL to be scraped :- " + pageUrl)
         fbAdLibItemList = []
         try:
-            # currentDriver  = self.polling_for_driver(pageUrl)
             currentDriver = self.get_chrome_driver_instance()
-            currentDriver.get(pageUrl)
+        except Exception as ex:
+            raise Exception(ex)
+        currentDriver.get(pageUrl)
+        try:
+            # currentDriver  = self.polling_for_driver(pageUrl)
             # Wait for List of Ads
             try:
                 element = WebDriverWait(currentDriver, 60).until(EC.presence_of_element_located((By.CLASS_NAME, "_99s5")))
