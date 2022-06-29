@@ -6,6 +6,7 @@ import random
 import boto3
 import time
 from webdriver_manager.chrome import ChromeDriverManager
+from decouple import config
 import logging
 logger = logging.getLogger(__name__)
 # from random_user_agent.user_agent import UserAgent
@@ -22,9 +23,14 @@ class FbAdLibPageSpider:
         self.bucket_name = "fbadslib-dev"
 
     def takeScreenShot(self, currentDriver, ss_name):
+        session = boto3.Session(
+        aws_access_key_id=config("aws_access_key_id"),
+        aws_secret_access_key=config("aws_secret_access_key"),
+        region_name="us-east-1"
+        )
         screenshot_path = "/tmp/" + ss_name
         currentDriver.save_screenshot(screenshot_path)
-        s3 = boto3.client("s3")
+        s3 = session.resource('s3')
         s3.put_object(Bucket=self.bucket_name, Key=ss_name, Body=open(screenshot_path, "rb"))
     
     def get_chrome_driver_instance(self):
@@ -95,7 +101,7 @@ class FbAdLibPageSpider:
         fbAdLibItemList = []
         try:
             currentDriver = self.get_chrome_driver_instance()
-            # self.takeScreenShot(currentDriver, 'pageDrivercccc.png')
+            self.takeScreenShot(currentDriver, 'pageDriverTestingNet.png')
         except Exception as ex:
             logger.info(ex)
             raise Exception(ex)
