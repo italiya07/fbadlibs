@@ -6,6 +6,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import boto3
 import time
 from webdriver_manager.chrome import ChromeDriverManager
+import logging
+logger = logging.getLogger(__name__)
 # from random_user_agent.user_agent import UserAgent
 # from random_user_agent.params import SoftwareName, OperatingSystem
 
@@ -43,6 +45,8 @@ class FbAdLibAdSpider:
         options.add_argument("disable-notifications")
         self.proxyToBeUsed=random.choice(self.proxylist)
         options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
+
+        logger.info(f'Proxy To be Used : {self.proxyToBeUsed}')
 
         # software_names     = [SoftwareName.CHROME.value]
         # operating_systems  = [OperatingSystem.LINUX.value]   
