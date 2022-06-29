@@ -95,9 +95,12 @@ class FbAdLibPageSpider:
         fbAdLibItemList = []
         try:
             currentDriver = self.get_chrome_driver_instance()
+            self.takeScreenShot(currentDriver, 'pageDrivercccc.png')
         except Exception as ex:
+            logger.info(ex)
             raise Exception(ex)
         currentDriver.get(pageUrl)
+        logger.info("Get URL SuccessFull")
         try:
             # currentDriver  = self.polling_for_driver(pageUrl)
             # Wait for List of Ads
