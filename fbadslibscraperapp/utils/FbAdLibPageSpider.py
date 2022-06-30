@@ -7,6 +7,7 @@ import boto3
 import time
 from webdriver_manager.chrome import ChromeDriverManager
 from decouple import config
+from selenium.webdriver.chrome.options import Options
 import logging
 logger = logging.getLogger(__name__)
 # from random_user_agent.user_agent import UserAgent
@@ -37,43 +38,55 @@ class FbAdLibPageSpider:
     
     def get_chrome_driver_instance(self):
 
-        # options = webdriver.ChromeOptions()
-        # options.binary_location = '/opt/chrome-linux/chrome'
-        # options.add_argument('--headless')
-        # options.add_argument('--no-sandbox')
-        # options.add_argument("--disable-gpu")
-        # options.add_argument('--window-size=1440x626')
-        # options.add_argument("--disable-extensions")
-        # options.add_argument("--single-process")
-        # options.add_argument("--disable-dev-shm-usage")
-        # options.add_argument("--disable-dev-tools")
-        # options.add_argument('--ignore-certificate-errors')
-        # options.add_argument('--allow-running-insecure-content')
-        # options.add_argument("--no-zygote")
-        # options.add_experimental_option("useAutomationExtension", False)
-        # options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        # options.add_argument("disable-popup-blocking")
-        # options.add_argument("disable-notifications")
+        options = Options()
+        options.binary_location = '/opt/chrome-linux/chrome'
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument("--disable-gpu")
+        options.add_argument('--window-size=1440x626')
+        options.add_argument("--disable-extensions")
+        options.add_argument("--single-process")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-dev-tools")
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--allow-running-insecure-content')
+        options.add_argument("--no-zygote")
+        options.add_experimental_option("useAutomationExtension", False)  # Adding Argument to Not Use Automation Extension
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])  # Excluding enable-automation Switch
+        options.add_argument("disable-popup-blocking")
+        options.add_argument("disable-notifications")
+        # ProxyToBeUsed  = random.choice(proxyUrls)
+        # print("ProxyToBeUsed :" + proxy)
+        options.add_argument('--proxy-server=%s' % '198.204.249.42:19020')
+        # proxy_ip = random.choice(proxyUrls) #get a free proxy from the websites in the description
 
-        # self.proxyToBeUsed=random.choice(self.proxylist)
-        # options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
+        # #setting up proxy
+        # proxy =Proxy()
+        # proxy.proxy_type = ProxyType.MANUAL
+        # proxy.http_proxy = proxy_ip
+        # proxy.ssl_proxy = proxy_ip
 
-        # logger.info(f'Proxy To be Used : {self.proxyToBeUsed}')
+        # #linking proxy and setting up driver
+        # capabilities = webdriver.DesiredCapabilities.CHROME
+        # proxy.add_to_capabilities(capabilities)
+        #options.add_argument("--remote-debugging-port=9222")
 
-        # # software_names = [SoftwareName.CHROME.value]
-        # # operating_systems = [OperatingSystem.LINUX.value]   
-        # # user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems)
-        # # user_agent = user_agent_rotator.get_random_user_agent()
-        # # options.add_argument(f'user-agent={user_agent}')
+        # software_names     = [SoftwareName.CHROME.value]
+        # operating_systems  = [OperatingSystem.LINUX.value]   
+        # user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems)
+        # user_agent = user_agent_rotator.get_random_user_agent()
+        # options.add_argument(f'user-agent={user_agent}')
 
-        # driver = webdriver.Chrome(executable_path="/opt/chromedriver",options=options)
-        # return driver
-
-        chrome_options = webdriver.ChromeOptions()
-        prefs = {"profile.managed_default_content_settings.images": 2}
-        chrome_options.add_experimental_option("prefs", prefs)
-        driver = webdriver.Chrome(ChromeDriverManager().install())
+        driver = webdriver.Chrome("/opt/chromedriver",
+                                    options=options)
         return driver
+
+        # chrome_options = webdriver.ChromeOptions()
+        # prefs = {"profile.managed_default_content_settings.images": 2}
+        # chrome_options.add_experimental_option("prefs", prefs)
+        # chrome_options.add_argument('--no-sandbox')
+        # driver = webdriver.Chrome(ChromeDriverManager().install())
+        # return driver
 
     # def polling_for_driver(self, pageUrl):
     #     for count in range(self.maxPollingCount):

@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 import boto3
 import time
 from webdriver_manager.chrome import ChromeDriverManager
@@ -26,7 +27,7 @@ class FbAdLibAdSpider:
         s3.put_object(Bucket=self.bucket_name, Key=ss_name, Body=open(screenshot_path, "rb"))
     
     def get_chrome_driver_instance(self):
-        options = webdriver.ChromeOptions()
+        options = Options()
         options.binary_location = '/opt/chrome-linux/chrome'
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
@@ -43,10 +44,21 @@ class FbAdLibAdSpider:
         options.add_experimental_option("excludeSwitches", ["enable-automation"])  # Excluding enable-automation Switch
         options.add_argument("disable-popup-blocking")
         options.add_argument("disable-notifications")
-        self.proxyToBeUsed=random.choice(self.proxylist)
-        # options.add_argument('--proxy-server=%s' % self.proxyToBeUsed)
+        # ProxyToBeUsed  = random.choice(proxyUrls)
+        # print("ProxyToBeUsed :" + proxy)
+        options.add_argument('--proxy-server=%s' % '198.204.249.42:19020')
+        # proxy_ip = random.choice(proxyUrls) #get a free proxy from the websites in the description
 
-        logger.info(f'Proxy To be Used : {self.proxyToBeUsed}')
+        # #setting up proxy
+        # proxy =Proxy()
+        # proxy.proxy_type = ProxyType.MANUAL
+        # proxy.http_proxy = proxy_ip
+        # proxy.ssl_proxy = proxy_ip
+
+        # #linking proxy and setting up driver
+        # capabilities = webdriver.DesiredCapabilities.CHROME
+        # proxy.add_to_capabilities(capabilities)
+        #options.add_argument("--remote-debugging-port=9222")
 
         # software_names     = [SoftwareName.CHROME.value]
         # operating_systems  = [OperatingSystem.LINUX.value]   
@@ -54,8 +66,8 @@ class FbAdLibAdSpider:
         # user_agent = user_agent_rotator.get_random_user_agent()
         # options.add_argument(f'user-agent={user_agent}')
 
-        print(self.proxyToBeUsed)
-        driver = webdriver.Chrome(executable_path="/opt/chromedriver",options=options)
+        driver = webdriver.Chrome("/opt/chromedriver",
+                                    options=options)
         return driver
         # chrome_options = webdriver.ChromeOptions()
         # prefs = {"profile.managed_default_content_settings.images": 2}
