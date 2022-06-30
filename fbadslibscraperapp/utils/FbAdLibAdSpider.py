@@ -47,9 +47,9 @@ class FbAdLibAdSpider:
         options.add_experimental_option("excludeSwitches", ["enable-automation"])  # Excluding enable-automation Switch
         options.add_argument("disable-popup-blocking")
         options.add_argument("disable-notifications")
-        # ProxyToBeUsed  = random.choice(proxyUrls)
+        proxyToBeUsed  = random.choice(self.proxylist)
         # print("ProxyToBeUsed :" + proxy)
-        options.add_argument('--proxy-server=%s' % '198.204.249.42:19020')
+        options.add_argument('--proxy-server=%s' % proxyToBeUsed)
         # proxy_ip = random.choice(proxyUrls) #get a free proxy from the websites in the description
 
         # #setting up proxy
