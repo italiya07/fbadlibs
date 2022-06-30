@@ -24,11 +24,6 @@ class FbAdLibPageSpider:
         self.bucket_name = "fbadslib-dev"
 
     def takeScreenShot(self, currentDriver, ss_name):
-        session = boto3.Session(
-        aws_access_key_id=config("aws_access_key_id"),
-        aws_secret_access_key=config("aws_secret_access_key"),
-        region_name="us-east-1"
-        )
         screenshot_path = "/tmp/" + ss_name
         currentDriver.save_screenshot(screenshot_path)
         s3 = boto3.client("s3",

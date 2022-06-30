@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from decouple import config
 import boto3
 import time
 from webdriver_manager.chrome import ChromeDriverManager
@@ -23,7 +24,9 @@ class FbAdLibAdSpider:
     def takeScreenShot(self, currentDriver, ss_name):
         screenshot_path = "/tmp/" + ss_name
         currentDriver.save_screenshot(screenshot_path)
-        s3 = boto3.client("s3")
+        s3 = boto3.client("s3",
+                          aws_access_key_id=config("aws_access_key_id"),
+                          aws_secret_access_key=config("aws_secret_access_key"))
         s3.put_object(Bucket=self.bucket_name, Key=ss_name, Body=open(screenshot_path, "rb"))
     
     def get_chrome_driver_instance(self):

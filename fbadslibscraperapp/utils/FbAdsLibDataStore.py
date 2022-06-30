@@ -1,5 +1,6 @@
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
+from decouple import config
 import boto3
 import requests
 import hashlib
@@ -14,18 +15,12 @@ class FbAdsLibDataStore:
         service = 'es'
         self.bucket_name = "fbadslib-dev"
         self.index_name = 'fbadslib-dev-test'
-        
-        credentials = boto3.Session().get_credentials()
 
-        self.s3 = boto3.client("s3")
-        # self.s3 = boto3.client(
-        #     service_name='s3',
-        #     region_name=region,
-        #     aws_access_key_id=credentials.access_key,
-        #     aws_secret_access_key=credentials.secret_key
-        #     )
+        self.s3 = boto3.client("s3",
+                          aws_access_key_id=config("aws_access_key_id"),
+                          aws_secret_access_key=config("aws_secret_access_key"))
 
-        awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+        awsauth = AWS4Auth(config("aws_access_key_id"), config("aws_secret_access_key"), region, service)
 
         self.client = OpenSearch(
                         hosts = [{'host': host, 'port': 443}],
