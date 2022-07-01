@@ -30,5 +30,6 @@ urlpatterns = [
     path('forgot_password/', Forgotpasswordview , name='forgotpassword'),
     path('change_password/<str:token>', Change_password , name='change_password'),
     path('isalive/', Isalive , name='alive'),
+    path('filters/',FilterView,name='FilterView'),
     path('', include(router.urls)),
 ]

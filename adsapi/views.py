@@ -10,7 +10,7 @@ from decouple import config
 import utils.response_handler as rh
 from rest_framework import status
 from rest_framework.decorators import api_view,permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from django.contrib.auth import get_user_model, login, logout,authenticate
 from .utils import token
 import datetime
@@ -450,3 +450,39 @@ class subAllAds(viewsets.ViewSet):
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
         return Response(r.response)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@ensure_csrf_cookie
+def FilterView(request):
+    s = request.data.get('keywords')
+    str1 = ""
+    # traverse in the string 
+    for i in s:
+        str1 += i + " AND " 
+
+    query={
+        "query": {
+            "query_string": {
+            "fields": ["*"],
+            "query": str1[:-5]
+            }
+        }
+    }
+
+    res=es.search(index=es_indice,body=query)
+    data=[]
+
+    if res["hits"]["hits"]:
+        for d in res["hits"]["hits"]:
+            url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            pre_signed_url = client.generate_presigned_url('get_object',
+                                                Params={'Bucket': bucket_name,'Key': url},
+                                                ExpiresIn=3600*24)
+            d["_source"]["bucketMediaURL"]=pre_signed_url
+            data.append(d["_source"])
+        r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
+        return Response(r.response)
+
+    r=rh.ResponseMsg(data={},error=False,msg="Success")
+    return Response(r.response, status=status.HTTP_200_OK)    
