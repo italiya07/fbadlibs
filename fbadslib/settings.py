@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'bootstrap5',
     'rest_framework',
     'adsapi',
-    'corsheaders'
+    'corsheaders',
+    'fbadslibscraperapp'
 ]
 
 MIDDLEWARE = [
@@ -182,4 +183,22 @@ SIMPLE_JWT = {
   'AUTH_COOKIE_HTTP_ONLY' : True, # Http only cookie flag.It's not fetch by javascript.
   'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
   'AUTH_COOKIE_SAMESITE': 'Lax',  # Whether to set the flag restricting cookie leaks on cross-site requests. This can be 'Lax', 'Strict', or None to disable the flag.
+}
+
+LOGGING = {
+        'version': 1,
+        'disable_existing_loggers':False,
+        'handlers':{
+            'console':{
+                'class':'logging.StreamHandler',
+            },
+            'file':{
+                'class':'logging.FileHandler',
+                'filename':'fbadslib.log',
+            },
+        },
+        'root':{
+            'handlers':['console', 'file'],
+            'level':'INFO',
+        },
 }
