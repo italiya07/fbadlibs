@@ -456,16 +456,13 @@ class subAllAds(viewsets.ViewSet):
 @ensure_csrf_cookie
 def FilterView(request):
     s = request.data.get('keywords')
-    str1 = ""
-    # traverse in the string 
-    for i in s:
-        str1 += i + " AND " 
-
+    str1=" AND ".join(s)
+    print(str1)
     query={
         "query": {
             "query_string": {
             "fields": ["*"],
-            "query": str1[:-5]
+            "query": str1
             }
         }
     }
