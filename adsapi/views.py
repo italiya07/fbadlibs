@@ -569,14 +569,15 @@ def card(request):
             context['payment_intent_secret'] = pi.client_secret
             context['STRIPE_PUBLISHABLE_KEY'] = settings.STRIPE_PUBLISHABLE_KEY
 
-            return render(request, 'payments/3dsec.html', context)
-
+            r=rh.ResponseMsg(data=context,error=False,msg="Action Required!!!")
+            return Response(r.response, status=status.HTTP_200_OK)
+    
     else:
         stripe.PaymentIntent.modify(
             payment_intent_id,
             payment_method=payment_method_id
         )
-    # return render(request, 'payments/thank_you.html')
+        
     r=rh.ResponseMsg(data={},error=False,msg="Thank You for Payment !!!")
     return Response(r.response, status=status.HTTP_200_OK)
 
@@ -603,8 +604,11 @@ def stripe_webhooks(request):
         return HttpResponse(status=400)
 
     # Handle the event
-    if event.type == 'charge.succeeded':
+    # if event.type == 'charge.succeeded':
         # object has  payment_intent attr
+        # set_paid_until(event.data.object)
+    
+    if event.type == 'invoice.payment_succeeded':
         set_paid_until(event.data.object)
 
     return HttpResponse(status=200)
