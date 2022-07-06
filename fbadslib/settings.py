@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'adsapi',
     'corsheaders',
-    'fbadslibscraperapp'
 ]
 
 MIDDLEWARE = [
