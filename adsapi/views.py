@@ -188,18 +188,7 @@ class getAllAds(viewsets.ViewSet):
                 d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
                 url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
                 d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-                # pre_signed_url = client.generate_presigned_url('get_object',
-                #                                   Params={'Bucket': bucket_name,'Key': url},
-                #                                   ExpiresIn=3600*24)
-            
-                                
-
-                # if saved_ad_obj:
-                #     d["_source"]["saved_id"]=saved_ad_obj.id
-                # else:
-                #     d["_source"]["saved_id"]=None
                 data.append(d["_source"])
-
             final_data.append({"saved_ads":ad_ids})
             final_data.append({"all_ads": data})
             r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
@@ -348,10 +337,9 @@ class ManageSaveAds(viewsets.ViewSet):
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                pre_signed_url = client.generate_presigned_url('get_object',
-                                                  Params={'Bucket': bucket_name,'Key': url},
-                                                  ExpiresIn=3600*24)
-                d["_source"]["bucketMediaURL"]=pre_signed_url
+                d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 add.append(d["_source"])
         if serializer.is_valid():
             serializer.save(user=user)
@@ -413,10 +401,9 @@ class ManageSaveAds(viewsets.ViewSet):
                 if res["hits"]["hits"]:
                     for d in res["hits"]["hits"]:
                         url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                        pre_signed_url = client.generate_presigned_url('get_object',
-                                                        Params={'Bucket': bucket_name,'Key': url},
-                                                        ExpiresIn=3600*24)
-                        d["_source"]["bucketMediaURL"]=pre_signed_url
+                        d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                        url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                        d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                         d["_source"]["id"]=i["id"]
                         add.append(d["_source"])
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
@@ -460,10 +447,9 @@ class subAllAds(viewsets.ViewSet):
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                pre_signed_url = client.generate_presigned_url('get_object',
-                                                  Params={'Bucket': bucket_name,'Key': url},
-                                                  ExpiresIn=3600*24)
-                d["_source"]["bucketMediaURL"]=pre_signed_url
+                d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 data.append(d["_source"])
             r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
             return Response(r.response)
@@ -492,10 +478,9 @@ def FilterView(request):
     if res["hits"]["hits"]:
         for d in res["hits"]["hits"]:
             url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            pre_signed_url = client.generate_presigned_url('get_object',
-                                                Params={'Bucket': bucket_name,'Key': url},
-                                                ExpiresIn=3600*24)
-            d["_source"]["bucketMediaURL"]=pre_signed_url
+            d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
             data.append(d["_source"])
         r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
         return Response(r.response)
