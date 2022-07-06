@@ -59,11 +59,11 @@ bucket_name="fbadslib-dev"
 
 API_KEY = config("STRIPE_SECRET_KEY")
 
-def pre_signed_url_generator(url):
-    pre_signed_url = client.generate_presigned_url('get_object',
-                                                  Params={'Bucket': bucket_name,'Key': url},
-                                                  ExpiresIn=3600*24)
-    return pre_signed_url
+# def pre_signed_url_generator(url):
+#     pre_signed_url = client.generate_presigned_url('get_object',
+#                                                   Params={'Bucket': bucket_name,'Key': url},
+#                                                   ExpiresIn=3600*24)
+#     return pre_signed_url
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -184,10 +184,10 @@ class getAllAds(viewsets.ViewSet):
         final_data=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
-                url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-                url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 data.append(d["_source"])
             final_data.append({"saved_ads":ad_ids})
             final_data.append({"all_ads": data})
@@ -336,10 +336,10 @@ class ManageSaveAds(viewsets.ViewSet):
         # fdata=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
-                url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-                url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 add.append(d["_source"])
         if serializer.is_valid():
             serializer.save(user=user)
@@ -400,10 +400,10 @@ class ManageSaveAds(viewsets.ViewSet):
                 res=es.search(index=es_indice,body=query) 
                 if res["hits"]["hits"]:
                     for d in res["hits"]["hits"]:
-                        url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                        d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-                        url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                        d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                        # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                        # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                        # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                        # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                         d["_source"]["id"]=i["id"]
                         add.append(d["_source"])
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
@@ -446,10 +446,10 @@ class subAllAds(viewsets.ViewSet):
         data=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
-                url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-                url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 data.append(d["_source"])
             r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
             return Response(r.response)
@@ -477,10 +477,10 @@ def FilterView(request):
 
     if res["hits"]["hits"]:
         for d in res["hits"]["hits"]:
-            url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-            url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
             data.append(d["_source"])
         r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
         return Response(r.response)
@@ -577,7 +577,7 @@ def card(request):
             payment_intent_id,
             payment_method=payment_method_id
         )
-        
+
     r=rh.ResponseMsg(data={},error=False,msg="Thank You for Payment !!!")
     return Response(r.response, status=status.HTTP_200_OK)
 
