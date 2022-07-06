@@ -59,6 +59,12 @@ bucket_name="fbadslib-dev"
 
 API_KEY = config("STRIPE_SECRET_KEY")
 
+def pre_signed_url_generator(url):
+    pre_signed_url = client.generate_presigned_url('get_object',
+                                                  Params={'Bucket': bucket_name,'Key': url},
+                                                  ExpiresIn=3600*24)
+    return pre_signed_url
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def Isalive(request): 
@@ -179,11 +185,14 @@ class getAllAds(viewsets.ViewSet):
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                pre_signed_url = client.generate_presigned_url('get_object',
-                                                  Params={'Bucket': bucket_name,'Key': url},
-                                                  ExpiresIn=3600*24)
+                d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                # pre_signed_url = client.generate_presigned_url('get_object',
+                #                                   Params={'Bucket': bucket_name,'Key': url},
+                #                                   ExpiresIn=3600*24)
             
-                d["_source"]["bucketMediaURL"]=pre_signed_url                
+                                
 
                 # if saved_ad_obj:
                 #     d["_source"]["saved_id"]=saved_ad_obj.id
