@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
 )
+import datetime
+from datetime import date
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -61,6 +63,10 @@ class User(AbstractBaseUser):
     last_name=models.CharField(null=True, blank=True, max_length=100)
     # profile_picture=models.ImageField(upload_to=get_avatar_path, null=True, blank=True)
     #phone_number=models.PositiveBigIntegerField(null=True)
+    paid_until = models.DateField(
+        null=True,
+        blank=True
+    )
     date_joined=models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True) # a admin user; non super-user
@@ -84,6 +90,28 @@ class User(AbstractBaseUser):
         "Does the user have permissions to view the app `app_label`?"
         # Simplest possible answer: Yes, always
         return True
+
+    def set_paid_until(self, date_or_timestamp):
+        if isinstance(date_or_timestamp, int):
+            # input date as timestamp integer
+            paid_until = date.fromtimestamp(date_or_timestamp)
+        elif isinstance(date_or_timestamp, str):
+            # input date as timestamp string
+            paid_until = date.fromtimestamp(int(date_or_timestamp))
+        else:
+            paid_until = date_or_timestamp
+
+        self.paid_until = paid_until
+        self.save()
+
+    def has_paid(
+        self,
+        current_date=datetime.date.today()
+    ):
+        if self.paid_until is None:
+            return False
+
+        return current_date < self.paid_until
 
     # @property
     # def is_staff(self):

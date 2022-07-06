@@ -31,5 +31,6 @@ urlpatterns = [
     path('change_password/<str:token>', Change_password , name='change_password'),
     path('isalive/', Isalive , name='alive'),
     path('filters/',FilterView,name='FilterView'),
+    path('stripe_paymentmethod/',Stripe_Payment_Method,name='Stripe_Payment_Method'),
     path('', include(router.urls)),
 ]
