@@ -1,25 +1,25 @@
 import logging
 import stripe
-from adsapi.models import User
+from adsapi.models import *
 from decouple import config
 from django.conf import settings
 
 MONTH = 'm'
 ANNUAL = 'a'
 
-API_KEY = config('STRIPE_SECRET_KEY')
+API_KEY = config("STRIPE_SECRET_KEY")
 logger = logging.getLogger(__name__)
 
 
 class VideosMonthPlan:
     def __init__(self):
-        self.stripe_plan_id = config('STRIPE_PLAN_MONTHLY_ID')
+        self.stripe_plan_id = config("STRIPE_PLAN_MONTHLY_ID")
         self.amount = 1000
 
 
 class VideosAnnualPlan:
     def __init__(self):
-        self.stripe_plan_id = config('STRIPE_PLAN_ANNUAL_ID')
+        self.stripe_plan_id = config("STRIPE_PLAN_ANNUAL_ID")
         self.amount = 10000
 
 
@@ -48,6 +48,7 @@ class VideosPlan:
     def amount(self):
         return self.plan.amount
 
+
 def set_paid_until(charge):
     stripe.api_key = API_KEY
     email = charge.customer_email
@@ -55,6 +56,8 @@ def set_paid_until(charge):
     
     try:
         user = User.objects.get(email=email)
+        subscription_details_obj=Subscription_details(user=user,subscription_id=charge.subscription,customer_id=charge.customer)
+        subscription_details_obj.save()
     except User.DoesNotExist:
         logger.warning(
             f"User with email {email} not found"
@@ -65,3 +68,4 @@ def set_paid_until(charge):
     logger.info(
         f"Profile with {current_period_end} saved for user {email}"
     )
+    

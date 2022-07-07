@@ -9,7 +9,8 @@ import boto3
 from decouple import config
 import utils.response_handler as rh
 from rest_framework import status
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view,permission_classes 
+from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from django.contrib.auth import get_user_model, login, logout,authenticate
 from .utils import token
@@ -36,6 +37,7 @@ from django.http import (
     HttpResponse,
     HttpResponseRedirect
 )
+from .decorators import subscription_required
 # Create your views here.
 
 User = get_user_model()
@@ -163,6 +165,7 @@ def logoutview(request):
     }
     return response
 
+# @method_decorator(subscription_required,name='list')
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
         user_obj=request.user
@@ -198,7 +201,7 @@ class getAllAds(viewsets.ViewSet):
         return Response(r.response)
 
 class userManager(viewsets.ViewSet):
-    permission_classes=[AllowAny]
+    # @method_decorator(subscription_required)
     def create(self,request):
         data=request.data
         serializer=UserSerializer(data=data)
@@ -213,12 +216,14 @@ class userManager(viewsets.ViewSet):
         r=rh.ResponseMsg(data={},error=True,msg="User creation failed")
         return Response(r.response)
 
+    # @method_decorator(subscription_required)
     def destroy(self,request,pk=None):
         user=User.objects.filter(id=pk).first()
         user.delete()
         r=rh.ResponseMsg(data={},error=False,msg="User Deleted")
         return Response(r.response)
     
+    # @method_decorator(subscription_required)
     def update(self,request,pk=None):
         user=User.objects.filter(id=pk).first()
         data=request.data
@@ -242,6 +247,7 @@ class userManager(viewsets.ViewSet):
         r=rh.ResponseMsg(data={},error=True,msg="Error in updation")
         return Response(r.response)
 
+    # @method_decorator(subscription_required)
     def list(self,request):
         user=User.objects.get(id=request.user.id)
         serializer=UserSerializer(user)
@@ -318,7 +324,8 @@ class ManageSaveAds(viewsets.ViewSet):
     #         return Response(r.response)
     #     r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
     #     return Response(r.response)
-
+    
+    # @method_decorator(subscription_required)
     def create(self,request):
         data=request.data
         user=request.user
@@ -352,7 +359,7 @@ class ManageSaveAds(viewsets.ViewSet):
         return Response(r.response)
  
  
-    
+    # @method_decorator(subscription_required)
     def destroy(self,request,pk=None):
         user_obj=request.user
         ad_obj=SaveAds.objects.get(user__id=user_obj.id,ad=pk)
@@ -381,7 +388,8 @@ class ManageSaveAds(viewsets.ViewSet):
     #         return Response(r.response)
     #     r=rh.ResponseMsg(data={},error=False,msg="Data not found")
     #     return Response(r.response)
-
+    
+    # @method_decorator(subscription_required)
     def list(self,request,pk=None):
         user=request.user
         add=[]
@@ -412,6 +420,7 @@ class ManageSaveAds(viewsets.ViewSet):
         return Response(r.response)
 
 class contactSupport(viewsets.ViewSet):
+    # @method_decorator(subscription_required)
     def create(self,request):
         email_sender=request.data.get('email')
         name=request.data.get('name')
@@ -430,7 +439,7 @@ class contactSupport(viewsets.ViewSet):
 
 
 class subAllAds(viewsets.ViewSet):
-    permission_classes=[AllowAny]
+    # @method_decorator(subscription_required)
     def create(self,request):
         ad_name = request.data.get('ad_name')
         query={
@@ -458,6 +467,7 @@ class subAllAds(viewsets.ViewSet):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+# @subscription_required
 @ensure_csrf_cookie
 def FilterView(request):
     s = request.data.get('keywords')
@@ -490,7 +500,7 @@ def FilterView(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 @ensure_csrf_cookie
 def Stripe_Payment_Method(request):
     stripe.api_key = API_KEY
@@ -519,7 +529,7 @@ def Stripe_Payment_Method(request):
         return Response(r.response, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 @ensure_csrf_cookie
 def card(request):
     payment_intent_id = request.data.get('payment_intent_id')
@@ -591,7 +601,7 @@ def stripe_webhooks(request):
 
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SIGNING_KEY
+            payload, sig_header, config("STRIPE_WEBHOOK_SIGNING_KEY")
         )
         logger.info("Event constructed correctly")
     except ValueError:
@@ -604,11 +614,49 @@ def stripe_webhooks(request):
         return HttpResponse(status=400)
 
     # Handle the event
-    # if event.type == 'charge.succeeded':
-        # object has  payment_intent attr
-        # set_paid_until(event.data.object)
-    
+    if event.type == 'charge.succeeded':
+        pass   
+
     if event.type == 'invoice.payment_succeeded':
         set_paid_until(event.data.object)
+    
+    r=rh.ResponseMsg(data={},error=False,msg="Webhook triggered")
+    return Response(r.response, status=status.HTTP_200_OK)
 
-    return HttpResponse(status=200)
+@api_view(['GET'])
+# @subscription_required
+@permission_classes([IsAuthenticated])
+def cancel_subscription(request):
+    stripe.api_key = API_KEY
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    print(sub_obj.subscription_id)
+    cancel_sub=stripe.Subscription.delete(
+        sub_obj.subscription_id,
+    )
+    r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
+    return Response(r.response, status=status.HTTP_200_OK)
+ 
+@api_view(['GET'])
+# @subscription_required
+@permission_classes([IsAuthenticated])
+def fetch_payment_method(request):
+    stripe.api_key = API_KEY
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    payment_details=stripe.PaymentMethod.list(
+        customer=sub_obj.customer_id,
+        type="card",
+    )
+    r=rh.ResponseMsg(data={"paydement_method_id":payment_details.data[0].id,"card_brand":payment_details.data[0].card["brand"],"country":payment_details.data[0].card["country"],"exp_month":payment_details.data[0].card["exp_month"],"exp_year":payment_details.data[0].card["exp_year"],"last4":payment_details.data[0].card["last4"],"funding":payment_details.data[0].card["funding"]},error=False,msg="Thank You for Payment !!!")
+    return Response(r.response, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+# @subscription_required
+@permission_classes([IsAuthenticated])
+def check_sub_status(request):
+    stripe.api_key = API_KEY
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    sub_status=stripe.Subscription.retrieve(
+        sub_obj.subscription_id,
+    )
+    r=rh.ResponseMsg(data={"status":sub_status.status},error=False,msg="Subscription status !!!!")
+    return Response(r.response, status=status.HTTP_200_OK)

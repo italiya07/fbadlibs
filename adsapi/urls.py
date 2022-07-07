@@ -32,5 +32,10 @@ urlpatterns = [
     path('isalive/', Isalive , name='alive'),
     path('filters/',FilterView,name='FilterView'),
     path('stripe_paymentmethod/',Stripe_Payment_Method,name='Stripe_Payment_Method'),
+    path('card/',card,name='card'),
+    path('webhooks/',stripe_webhooks,name='webhooks'),
+    path('cancel_subscription/',cancel_subscription,name='cancel_subscription'),
+    path('fetch_payment_method/',fetch_payment_method,name='fetch_payment_method'),
+    path('check_sub_status/',check_sub_status,name='check_sub_status'),
     path('', include(router.urls)),
 ]
