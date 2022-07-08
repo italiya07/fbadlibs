@@ -413,7 +413,7 @@ class ManageSaveAds(viewsets.ViewSet):
                         # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
                         # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
                         # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-                        d["_source"]["id"]=i["id"]
+                        d["_source"]["ad_id"]=i["id"]
                         add.append(d["_source"])
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
             return Response(r.response)
@@ -493,6 +493,7 @@ def FilterView(request):
             # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
             # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
             # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            d["_source"]["id"]=d["_id"]
             data.append(d["_source"])
         r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
         return Response(r.response)
