@@ -402,7 +402,7 @@ class ManageSaveAds(viewsets.ViewSet):
                             "size": 10000,
                             "query": {
                                 "match": {
-                                    "adID" : i["ad"]
+                                    "_id" : i["ad"]
                                 }
                             }
                         }
