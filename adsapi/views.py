@@ -367,21 +367,21 @@ class ManageSaveAds(viewsets.ViewSet):
     # @method_decorator(subscription_required)
     def destroy(self,request,pk=None):
         user_obj=request.user
-        ad_obj=SaveAds.objects.get(user__id=user_obj.id,ad=pk)
-        add=[]
-        query={
-                "size": 10000,
-                "query": {
-                    "match": {
-                        "_id" : ad_obj.ad
-                    }
-                }
-            }
-        res=es.search(index=es_indice,body=query)
-        if res["hits"]["hits"]:
-            add.append(res["hits"]["hits"][0]["_source"])
+        ad_obj=SaveAds.objects.filter(user__id=user_obj.id,ad=pk).all()
+        # add=[]
+        # query={
+        #         "size": 10000,
+        #         "query": {
+        #             "match": {
+        #                 "_id" : ad_obj.ad
+        #             }
+        #         }
+        #     }
+        # res=es.search(index=es_indice,body=query)
+        # if res["hits"]["hits"]:
+        #     add.append(res["hits"]["hits"][0]["_source"])
         ad_obj.delete()
-        r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
+        r=rh.ResponseMsg(data={},error=False,msg="Ad deleted successfully")
         return Response(r.response)
     
     # def list(self,request,pk=None):
