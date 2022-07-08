@@ -330,9 +330,9 @@ class ManageSaveAds(viewsets.ViewSet):
     def create(self,request):
         data=request.data
         user=request.user
-        ad_obj=SaveAds.objects.get(user__id=user.id,ad=data["ad"])
+        ad_obj=SaveAds.objects.filter(ad=data["ad"]).first()
         if ad_obj:
-            r=rh.ResponseMsg(data={},error=True,msg="Ad already saved")
+            r=rh.ResponseMsg(data={"id":ad_obj.id,"ad":ad_obj.ad},error=True,msg="Ad already saved")
             return Response(r.response)
         serializer=SaveAdsSerializer(data=data)
         query={
@@ -347,12 +347,13 @@ class ManageSaveAds(viewsets.ViewSet):
         add=[]
         # fdata=[]
         if res["hits"]["hits"]:
-            for d in res["hits"]["hits"]:
-                # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-                # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-                add.append(d["_source"])
+            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            res["hits"]["hits"][0]["_source"]["id"]=data["ad"]
+            add.append(res["hits"]["hits"][0]["_source"])
+             
         if serializer.is_valid():
             serializer.save(user=user)
             # d["_source"]["saved_id"]=serializer.data["id"]
@@ -379,6 +380,7 @@ class ManageSaveAds(viewsets.ViewSet):
             }
         res=es.search(index=es_indice,body=query)
         if res["hits"]["hits"]:
+            res["hits"]["hits"][0]["_source"]["id"]=ad_obj.ad
             add.append(res["hits"]["hits"][0]["_source"])
         ad_obj.delete()
         r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
@@ -418,7 +420,7 @@ class ManageSaveAds(viewsets.ViewSet):
                         # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
                         # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                         # kidfoflnm
-                        d["_source"]["ad_id"]=i["id"]
+                        d["_source"]["id"]=i["ad"]
                         add.append(d["_source"])
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
             return Response(r.response)
