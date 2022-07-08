@@ -330,6 +330,10 @@ class ManageSaveAds(viewsets.ViewSet):
     def create(self,request):
         data=request.data
         user=request.user
+        ad_obj=SaveAds.objects.get(user__id=user.id,ad=data["ad"])
+        if ad_obj:
+            r=rh.ResponseMsg(data={},error=True,msg="Ad already saved")
+            return Response(r.response)
         serializer=SaveAdsSerializer(data=data)
         query={
             "size": 10000,
