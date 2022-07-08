@@ -351,7 +351,7 @@ class ManageSaveAds(viewsets.ViewSet):
                 add.append(d["_source"])
         if serializer.is_valid():
             serializer.save(user=user)
-            d["_source"]["saved_id"]=serializer.data["id"]
+            # d["_source"]["saved_id"]=serializer.data["id"]
             # fdata.append({"ad_detail":add})
             # fdata.append({"id":serializer.data["id"], "ad":serializer.data["ad"]})
             r=rh.ResponseMsg(data=add,error=False,msg="Ad Saved")
@@ -402,7 +402,7 @@ class ManageSaveAds(viewsets.ViewSet):
                             "size": 10000,
                             "query": {
                                 "match": {
-                                    "_id" : i["ad"]
+                                    "adID" : i["ad"]
                                 }
                             }
                         }
