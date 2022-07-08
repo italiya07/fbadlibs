@@ -413,6 +413,7 @@ class ManageSaveAds(viewsets.ViewSet):
                         # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
                         # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
                         # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                        # kidfoflnm
                         d["_source"]["ad_id"]=i["id"]
                         add.append(d["_source"])
             r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
