@@ -203,6 +203,8 @@ class getAllAds(viewsets.ViewSet):
 
 class userManager(viewsets.ViewSet):
     # @method_decorator(subscription_required)
+    permission_classes=[AllowAny]
+    
     def create(self,request):
         data=request.data
         serializer=UserSerializer(data=data)
