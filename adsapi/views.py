@@ -38,6 +38,7 @@ from django.http import (
     HttpResponseRedirect
 )
 from .decorators import subscription_required
+from .custom_permission import IsPostOrIsAuthenticated
 # Create your views here.
 
 User = get_user_model()
@@ -202,8 +203,8 @@ class getAllAds(viewsets.ViewSet):
         return Response(r.response)
 
 class userManager(viewsets.ViewSet):
-    # @method_decorator(subscription_required)
-    # @method_decorator(permission_classes=[AllowAny])
+    permission_classes=[IsPostOrIsAuthenticated]
+
     def create(self,request):
         data=request.data
         serializer=UserSerializer(data=data)
