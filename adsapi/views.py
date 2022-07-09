@@ -204,7 +204,7 @@ class getAllAds(viewsets.ViewSet):
 
 class userManager(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
-
+# 89
     def create(self,request):
         data=request.data
         serializer=UserSerializer(data=data)
