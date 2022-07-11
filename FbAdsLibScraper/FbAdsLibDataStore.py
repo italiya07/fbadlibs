@@ -119,6 +119,7 @@ class FbAdsLibDataStore:
         
         yesterday = today - timedelta(days = 1)
         fbAdlibItem['history'] = [{"date": (yesterday - datetime.timedelta(days=x)).strftime('%d/%m'), "noOfCopyAds": None} for x in range(29)]
+        fbAdlibItem['history'].reverse()
         fbAdlibItem['history'].append({"date": today.strftime('%d/%m'), "noOfCopyAds": fbAdlibItem['noOfCopyAds']})
         try:
             fbAdlibItem['lastUpdatedTime'] = int(time.time() * 1000)
