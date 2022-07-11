@@ -7,6 +7,10 @@ import hashlib
 import uuid
 import datetime
 from botocore.errorfactory import ClientError
+from decouple import config
+import time
+import pandas as pd
+from datetime import timedelta
 
 class FbAdsLibDataStore:
 
@@ -19,10 +23,10 @@ class FbAdsLibDataStore:
         self.index_name = 'fbadslib-dev'
 
         self.s3 = boto3.client("s3",
-                          aws_access_key_id="AKIATXXBU2MXP2UABIN2",
-                          aws_secret_access_key="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")
+                          aws_access_key_id=config("aws_access_key_id"),
+                          aws_secret_access_key=config("aws_secret_access_key"))
 
-        awsauth = AWS4Auth("AKIATXXBU2MXP2UABIN2", "+2AzW4DlSpeq5K4i4LvjnsO1DOlNlCuz+UcYzY8S", region, service)
+        awsauth = AWS4Auth(config("aws_access_key_id"), config("aws_secret_access_key"), region, service)
 
         self.client = OpenSearch(
                         hosts = [{'host': host, 'port': 443}],
@@ -46,9 +50,10 @@ class FbAdsLibDataStore:
                 raise ex
                 
     def get_today(self):
-        today = datetime.date.today().strftime('%d/%m/%Y')
-        # today = (datetime.date.today() + datetime.timedelta(days=3)).strftime("%d/%m/%Y")
+        today = datetime.date.today()
+        # today = (datetime.date.today() + datetime.timedelta(days=1))
         return today
+        
             
     def generate_hash(self, fbAdlibItem):
 
@@ -64,6 +69,10 @@ class FbAdsLibDataStore:
             'displayURL':fbAdlibItem['displayURL'],
             'purchase_description':fbAdlibItem["purchaseDescription"],
             }
+        
+        if fbAdlibItem['adMediaType']=='video' and fbAdlibItem['adMediaThumbnail']:
+            media_data=requests.get(fbAdlibItem["adMediaThumbnail"],stream=True).raw
+            data['ad_media_thumbnail'] = str(media_data.data)
         
         # cobvert to Json Object to string
         a_string = str(data)
@@ -108,9 +117,12 @@ class FbAdsLibDataStore:
             self.s3.upload_fileobj(mediaResponse, self.bucket_name, f'pages/{pageName}.jpeg')
             fbAdlibItem['pageInfo']['bucketLogoURL'] = f'https://{self.bucket_name}.s3.amazonaws.com/pages/{pageName}.jpeg'
         
-        fbAdlibItem['history'] = {}
-        fbAdlibItem['history'][today] = fbAdlibItem['noOfCopyAds']
+        yesterday = today - timedelta(days = 1)
+        fbAdlibItem['history'] = [{"date": (yesterday - datetime.timedelta(days=x)).strftime('%d/%m'), "noOfCopyAds": None} for x in range(29)]
+        fbAdlibItem['history'].append({"date": today.strftime('%d/%m'), "noOfCopyAds": fbAdlibItem['noOfCopyAds']})
         try:
+            fbAdlibItem['lastUpdatedTime'] = int(time.time() * 1000)
+            fbAdlibItem['lastUpdatedDate'] = today.strftime("%d/%m/%Y")
             res=self.client.index(index=self.index_name, body=fbAdlibItem, refresh = True)
             print("Record created successfully !!!!!")
         except Exception as e:
@@ -124,21 +136,26 @@ class FbAdsLibDataStore:
         today = self.get_today()
         
         query1 = {
-             "script": {
-                "inline": f"ctx._source.history['{today}']={0}",
-                "lang": "painless"
-             },
-             "query": {
-                 "bool":{
-                    "must_not": [
+              "query": {
+                "bool": {
+                  "must_not": [
                     {
-                      "exists": {
-                        "field": f"history.{today}"
+                      "term": {
+                        "lastUpdatedDate": {
+                          "value": today.strftime("%d/%m/%Y")
+                        }
                       }
                     }
-                ] 
-                 }
-             }
+                  ]
+                }
+              }, 
+             "script": {
+               "lang":"painless",
+               "inline": "ctx._source.history.add(params)",
+               "params":{
+                         "date":today.strftime("%d/%m"),
+                         "noOfCopyAds": None
+                         }}
             }
         
         try:
@@ -153,6 +170,7 @@ class FbAdsLibDataStore:
         
 
     def update_ad(self, oldFbAdlibItem, updateQuery):
+        today = self.get_today()
         print("Update Query ::::" + updateQuery)
         print("oldFbAdlibItem hash ::::" + oldFbAdlibItem["hash"])
         query1={
@@ -229,27 +247,30 @@ class FbAdsLibDataStore:
                             if storedAd["status"] == 'Active':
                                 """Just Update No. Of ads and finish !!"""
                                 print('new --> active & old --> active |||| Just Update No. Of ads and finish !!')
-
+                                
+                                storedAd['history'][-1]['noOfCopyAds'] = newFbAdlibItem['noOfCopyAds']
                                 self.update_ad(storedAd, 
-                                            f"ctx._source.history['{today}']={newFbAdlibItem['noOfCopyAds']};ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']}")
+                                            f"ctx._source.history={storedAd['history']};ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']};ctx._source.lastUpdatedTime={int(time.time() * 1000)};ctx._source.lastUpdatedDate={today.strftime('%d/%m/%Y')}")
                             elif storedAd["status"] == 'Inactive':
                                 """Make it Active and update ad count!!"""
                                 print('new --> active & old --> Inactive |||| Make old Active and update ad count!!')
+                                storedAd['history'][-1]['noOfCopyAds'] = newFbAdlibItem['noOfCopyAds']
                                 self.update_ad(storedAd, 
-                                            f"ctx._source.history['{today}']={newFbAdlibItem['noOfCopyAds']};ctx._source.status='Active';ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']}")
+                                            f"ctx._source.history={storedAd['history']};ctx._source.status='Active';ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']};ctx._source.lastUpdatedTime={int(time.time() * 1000)};ctx._source.lastUpdatedDate={today.strftime('%d/%m/%Y')}")
 
                         elif newFbAdlibItem['status'] == "Inactive":
                             if storedAd["status"] == 'Active':
                                 """Just Update No. Of ads and finish !!"""
                                 print('new --> Inactive & old --> active |||| Make old Inactive and update ad count!!')
-
+                                storedAd['history'][-1]['noOfCopyAds'] = newFbAdlibItem['noOfCopyAds']
                                 self.update_ad(storedAd, 
-                                            f"ctx._source.history['{today}']={newFbAdlibItem['noOfCopyAds']};ctx._source.status='Inactive';ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']}")
+                                            f"ctx._source.history={storedAd['history']};ctx._source.status='Inactive';ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']};ctx._source.lastUpdatedTime={int(time.time() * 1000)};ctx._source.lastUpdatedDate={today.strftime('%d/%m/%Y')}")
                             elif storedAd["status"] == 'Inactive':
                                 """Make it Active and update ad count!!"""
                                 print('new --> Inactive & old --> Inactive |||| Just Update No. Of ads and finish !!')
+                                storedAd['history'][-1]['noOfCopyAds'] = newFbAdlibItem['noOfCopyAds']
                                 self.update_ad(storedAd, 
-                                            f"ctx._source.history['{today}']={newFbAdlibItem['noOfCopyAds']};ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']}")
+                                            f"ctx._source.history={storedAd['history']};ctx._source.noOfCopyAds={newFbAdlibItem['noOfCopyAds']};ctx._source.lastUpdatedTime={int(time.time() * 1000)};ctx._source.lastUpdatedDate={today.strftime('%d/%m/%Y')}")
 
                     else:
                         """Media URL is not matched now go for Status Check!!"""

@@ -31,6 +31,7 @@ class FbAdLibAdDataCleaner:
             adDataToBeCleaned["status"]=adDataToBeCleaned["status"].strip()
             adDataToBeCleaned["adID"]=adDataToBeCleaned["adID"].strip()
             adDataToBeCleaned["adMediaURL"]=adDataToBeCleaned["adMediaURL"].strip()
+            adDataToBeCleaned["adMediaThumbnail"]=adDataToBeCleaned["adMediaThumbnail"].strip()
             adDataToBeCleaned["adMediaType"]=adDataToBeCleaned["adMediaType"].strip()
             adDataToBeCleaned["adDescription"]=adDataToBeCleaned["adDescription"].strip()
             adDataToBeCleaned["ctaStatus"]=adDataToBeCleaned["ctaStatus"].strip()
