@@ -682,7 +682,7 @@ def check_sub_status(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_checkout_session(request):
-    print(request)
+    stripe.api_key =API_KEY
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
@@ -693,7 +693,7 @@ def create_checkout_session(request):
             return Response(r.response, status=status.HTTP_200_OK)
 
     try:
-        stripe.api_key =API_KEY
+        
         # prices = stripe.Price.list(
         #     lookup_keys=[request.data.get("lookup_key")],
         #     expand=['data.product']
@@ -705,7 +705,7 @@ def create_checkout_session(request):
             customer_email=request.user.email,
             line_items=[
                 {
-                    'price': "price_1LJcHhSDUd5CnxuZJVxj4oP9",
+                    'price': request.data.get("lookup_key"),
                     'quantity': 1,
                 },
             ],
