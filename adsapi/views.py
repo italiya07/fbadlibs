@@ -683,6 +683,15 @@ def check_sub_status(request):
 @permission_classes([AllowAny])
 def create_checkout_session(request):
     print(request)
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    if sub_obj:
+        sub_status=stripe.Subscription.retrieve(
+            sub_obj.subscription_id,
+        )
+        if sub_status.status == "active":
+            r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
+            return Response(r.response, status=status.HTTP_200_OK)
+
     try:
         stripe.api_key =API_KEY
         # prices = stripe.Price.list(
@@ -693,6 +702,7 @@ def create_checkout_session(request):
         # print("prices")
         # print(prices)
         checkout_session = stripe.checkout.Session.create(
+            customer_email=request.user.email,
             line_items=[
                 {
                     'price': "price_1LJcHhSDUd5CnxuZJVxj4oP9",
