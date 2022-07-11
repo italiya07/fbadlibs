@@ -213,11 +213,10 @@ class userManager(viewsets.ViewSet):
         if obj:
             r=rh.ResponseMsg(data={},error=True,msg="User already exist")
             return Response(r.response)
-        else :
-            if serializer.is_valid():
-                serializer.save()
-                r=rh.ResponseMsg(data=serializer.data,error=False,msg="User created")
-                return Response(r.response)
+        if serializer.is_valid():
+            serializer.save()
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="User created")
+            return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="User creation failed")
         return Response(r.response)
 
@@ -649,6 +648,8 @@ def cancel_subscription(request):
     cancel_sub=stripe.Subscription.delete(
         sub_obj.subscription_id,
     )
+    stripe.Customer.delete(sub_obj.customer_id)
+    sub_obj.delete()
     r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
  
