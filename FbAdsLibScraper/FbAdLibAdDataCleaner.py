@@ -38,8 +38,13 @@ class FbAdLibAdDataCleaner:
             adDataToBeCleaned["displayURL"]=adDataToBeCleaned["displayURL"].strip()
             adDataToBeCleaned["headline"]=adDataToBeCleaned["headline"].strip()
             adDataToBeCleaned["purchaseURL"]=adDataToBeCleaned["purchaseURL"].strip()
-            parsed_url = urlparse(adDataToBeCleaned["purchaseURL"])
-            adDataToBeCleaned["purchaseURL"] = parse_qs(parsed_url.query)["u"][0]
+            try:
+                parsed_url = urlparse(adDataToBeCleaned["purchaseURL"])
+                adDataToBeCleaned["purchaseURL"] = parse_qs(parsed_url.query)["u"][0]
+            except Exception as ex:
+                print(f"Exception purchaseURL :-- {adDataToBeCleaned['purchaseURL']}")
+                print(ex)
+
             adDataToBeCleaned["pageInfo"]["name"]=adDataToBeCleaned["pageInfo"]["name"].strip()
             adDataToBeCleaned["pageInfo"]["url"]=adDataToBeCleaned["pageInfo"]["url"].strip()
             adDataToBeCleaned["pageInfo"]["logo"]=adDataToBeCleaned["pageInfo"]["logo"].strip()
