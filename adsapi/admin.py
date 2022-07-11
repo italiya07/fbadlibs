@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from .models import *
 # Register your models here.
 
 
@@ -10,3 +11,6 @@ class Useradmin(admin.ModelAdmin):
     list_filter=['email']
     list_display = ['email']
 admin.site.register(User,Useradmin)
+
+admin.site.register(SaveAds)
+admin.site.register(Subscription_details)
