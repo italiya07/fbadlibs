@@ -1,3 +1,4 @@
+from cgi import print_directory
 from functools import partial
 from django.shortcuts import render
 from elastic_transport import Serializer
@@ -511,100 +512,101 @@ def FilterView(request):
     return Response(r.response, status=status.HTTP_200_OK)    
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@ensure_csrf_cookie
-def Stripe_Payment_Method(request):
-    stripe.api_key = API_KEY
-    plan = request.data.get('plan')
-    automatic = 'on'
-    payment_method = 'card'
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @ensure_csrf_cookie
+# def Stripe_Payment_Method(request):
+#     stripe.api_key = API_KEY
+#     plan = request.data.get('plan')
+#     automatic = 'on'
+#     payment_method = 'card'
 
-    plan_inst = VideosPlan(plan_id=plan)
+#     plan_inst = VideosPlan(plan_id=plan)
 
-    payment_intent = stripe.PaymentIntent.create(
-        amount=plan_inst.amount,
-        currency=plan_inst.currency,
-        payment_method_types=['card']
-    )
+#     payment_intent = stripe.PaymentIntent.create(
+#         amount=plan_inst.amount,
+#         currency=plan_inst.currency,
+#         payment_method_types=['card']
+#     )
 
-    context = {}
+#     context = {}
 
-    if payment_method == 'card':
-        context['secret_key'] = payment_intent.client_secret
-        context['STRIPE_PUBLISHABLE_KEY'] = config('STRIPE_PUBLISHABLE_KEY')
-        context['customer_email'] = request.user.email
-        context['payment_intent_id'] = payment_intent.id
-        context['automatic'] = automatic
-        context['stripe_plan_id'] = plan_inst.stripe_plan_id
-        r=rh.ResponseMsg(data=context,error=False,msg="Success")
-        return Response(r.response, status=status.HTTP_200_OK)
+#     if payment_method == 'card':
+#         context['secret_key'] = payment_intent.client_secret
+#         context['STRIPE_PUBLISHABLE_KEY'] = config('STRIPE_PUBLISHABLE_KEY')
+#         context['customer_email'] = request.user.email
+#         context['payment_intent_id'] = payment_intent.id
+#         context['automatic'] = automatic
+#         context['stripe_plan_id'] = plan_inst.stripe_plan_id
+#         r=rh.ResponseMsg(data=context,error=False,msg="Success")
+#         return Response(r.response, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@ensure_csrf_cookie
-def card(request):
-    payment_intent_id = request.data.get('payment_intent_id')
-    payment_method_id = request.data.get('payment_method_id')
-    stripe_plan_id = request.data.get('stripe_plan_id')
-    automatic = request.data.get('automatic')
-    stripe.api_key = API_KEY
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @ensure_csrf_cookie
+# def card(request):
+#     payment_intent_id = request.data.get('payment_intent_id')
+#     payment_method_id = request.data.get('payment_method_id')
+#     stripe_plan_id = request.data.get('stripe_plan_id')
+#     automatic = request.data.get('automatic')
+#     stripe.api_key = API_KEY
 
-    if automatic == 'on':
-        # create subs
-        customer = stripe.Customer.create(
-            # name="Parth Bhanderi",
-            # address={
-            #     "line1": "510 Townsend St",
-            #     "postal_code": "98140",
-            #     "city": "San Francisco",
-            #     "state": "CA",
-            #     "country": "US",
-            # },
-            email=request.user.email,
-            payment_method=payment_method_id,
-            invoice_settings={
-                'default_payment_method': payment_method_id
-            }
-        )
-        s = stripe.Subscription.create(
-            customer=customer.id,
-            items=[
-                {
-                    'plan': stripe_plan_id
-                },
-            ]
-        )
+#     if automatic == 'on':
+#         # create subs
+#         customer = stripe.Customer.create(
+#             # name="Parth Bhanderi",
+#             # address={
+#             #     "line1": "510 Townsend St",
+#             #     "postal_code": "98140",
+#             #     "city": "San Francisco",
+#             #     "state": "CA",
+#             #     "country": "US",
+#             # },
+#             email=request.user.email,
+#             payment_method=payment_method_id,
+#             invoice_settings={
+#                 'default_payment_method': payment_method_id
+#             }
+#         )
+#         s = stripe.Subscription.create(
+#             customer=customer.id,
+#             items=[
+#                 {
+#                     'plan': stripe_plan_id
+#                 },
+#             ]
+#         )
 
-        latest_invoice = stripe.Invoice.retrieve(s.latest_invoice)
-        print(latest_invoice)
-        ret = stripe.PaymentIntent.confirm(
-            latest_invoice.payment_intent
-        )
+#         latest_invoice = stripe.Invoice.retrieve(s.latest_invoice)
+#         print(latest_invoice)
+#         ret = stripe.PaymentIntent.confirm(
+#             latest_invoice.payment_intent
+#         )
 
-        if ret.status == 'requires_action':
-            pi = stripe.PaymentIntent.retrieve(
-                latest_invoice.payment_intent
-            )
-            context = {}
+#         if ret.status == 'requires_action':
+#             pi = stripe.PaymentIntent.retrieve(
+#                 latest_invoice.payment_intent
+#             )
+#             context = {}
 
-            context['payment_intent_secret'] = pi.client_secret
-            context['STRIPE_PUBLISHABLE_KEY'] = settings.STRIPE_PUBLISHABLE_KEY
+#             context['payment_intent_secret'] = pi.client_secret
+#             context['STRIPE_PUBLISHABLE_KEY'] = settings.STRIPE_PUBLISHABLE_KEY
 
-            r=rh.ResponseMsg(data=context,error=False,msg="Action Required!!!")
-            return Response(r.response, status=status.HTTP_200_OK)
+#             r=rh.ResponseMsg(data=context,error=False,msg="Action Required!!!")
+#             return Response(r.response, status=status.HTTP_200_OK)
     
-    else:
-        stripe.PaymentIntent.modify(
-            payment_intent_id,
-            payment_method=payment_method_id
-        )
+#     else:
+#         stripe.PaymentIntent.modify(
+#             payment_intent_id,
+#             payment_method=payment_method_id
+#         )
 
-    r=rh.ResponseMsg(data={},error=False,msg="Thank You for Payment !!!")
-    return Response(r.response, status=status.HTTP_200_OK)
+#     r=rh.ResponseMsg(data={},error=False,msg="Thank You for Payment !!!")
+#     return Response(r.response, status=status.HTTP_200_OK)
 
-@require_POST
-@csrf_exempt
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def stripe_webhooks(request):
 
     payload = request.body
@@ -630,6 +632,7 @@ def stripe_webhooks(request):
         pass   
 
     if event.type == 'invoice.payment_succeeded':
+        print("---------------------------------------------------------------------")
         set_paid_until(event.data.object)
     
     r=rh.ResponseMsg(data={},error=False,msg="Webhook triggered")
@@ -645,6 +648,8 @@ def cancel_subscription(request):
     cancel_sub=stripe.Subscription.delete(
         sub_obj.subscription_id,
     )
+    stripe.Customer.delete(sub_obj.customer_id)
+    sub_obj.delete()
     r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
  
@@ -672,3 +677,46 @@ def check_sub_status(request):
     )
     r=rh.ResponseMsg(data={"status":sub_status.status},error=False,msg="Subscription status !!!!")
     return Response(r.response, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_checkout_session(request):
+    stripe.api_key =API_KEY
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    if sub_obj:
+        sub_status=stripe.Subscription.retrieve(
+            sub_obj.subscription_id,
+        )
+        if sub_status.status == "active":
+            r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
+            return Response(r.response, status=status.HTTP_200_OK)
+
+    try:
+        
+        # prices = stripe.Price.list(
+        #     lookup_keys=[request.data.get("lookup_key")],
+        #     expand=['data.product']
+
+        # )
+        # print("prices")
+        # print(prices)
+        checkout_session = stripe.checkout.Session.create(
+            customer_email=request.user.email,
+            line_items=[
+                {
+                    'price': request.data.get("lookup_key"),
+                    'quantity': 1,
+                },
+            ],
+            mode='subscription',
+            success_url=config("front_end") +'/success.html?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=config("front_end") + '/cancel.html',
+        )
+        r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
+        return Response(r.response, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(e)
+        r=rh.ResponseMsg(data={},error=True,msg=str(e))
+        return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
