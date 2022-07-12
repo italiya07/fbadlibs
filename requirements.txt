@@ -57,7 +57,7 @@ platformdirs==2.5.1
 Protego==0.2.1
 proto-plus==1.20.6
 protobuf==3.20.1
-psycopg2==2.9.3
+# psycopg2==2.9.3
 psycopg2-binary==2.9.3
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
