@@ -131,7 +131,6 @@ class FbAdsLibDataStore:
             print(e)
         finally:
             return
-        return res
     
     def update_all_ads(self):
         today = self.get_today()
@@ -141,11 +140,9 @@ class FbAdsLibDataStore:
                 "bool": {
                   "must_not": [
                     {
-                      "term": {
-                        "lastUpdatedDate": {
-                          "value": today.strftime("%d/%m/%Y")
+                        "match": {
+                            "lastUpdatedDate.keyword": today.strftime("%d/%m/%Y")
                         }
-                      }
                     }
                   ]
                 }
@@ -182,24 +179,24 @@ class FbAdsLibDataStore:
                 "query":{
                     "bool": {
                         "must": [
-        {
-          "match": {
-            "hash": oldFbAdlibItem["hash"]
-          }
-        },
-        {
-          "match": {
-            "status": oldFbAdlibItem['status']
-          }
-        },
-                            {
-          "match": {
-            "adMediaURL": oldFbAdlibItem['adMediaURL']}
-          }
-      ]
-                    }
-                    }
-            }
+                                {
+                                "match": {
+                                    "hash.keyword": oldFbAdlibItem["hash"]
+                                }
+                                },
+                                {
+                                "match": {
+                                    "status.keyword": oldFbAdlibItem['status']
+                                }
+                                },
+                                {
+                                "match": {
+                                    "adMediaURL.keyword": oldFbAdlibItem['adMediaURL']}
+                                }
+                            ]
+                            }
+                     }
+                }
 
         try:
             query_res=self.client.update_by_query(index=self.index_name,body=query1, refresh = True)
@@ -223,7 +220,7 @@ class FbAdsLibDataStore:
                 "must": [
                     {
                     "match": {
-                        "hash": newFbAdlibItem["hash"]
+                        "hash.keyword": newFbAdlibItem["hash"]
                     }
                     }
                 ]
