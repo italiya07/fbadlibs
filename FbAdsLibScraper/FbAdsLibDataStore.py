@@ -167,7 +167,7 @@ class FbAdsLibDataStore:
 
         
 
-    def update_ad(self, oldFbAdlibItem, noOfCopyAds, statusToBeUpdated):
+    def update_ad(self, oldFbAdlibItem, noOfCopyAds, statusToBeUpdated=None):
         today = self.get_today()
         history = oldFbAdlibItem['history'][-1]['noOfCopyAds'] = noOfCopyAds
         query1={
