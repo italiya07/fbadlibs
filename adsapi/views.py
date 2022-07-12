@@ -746,7 +746,7 @@ def fetch_payment_method(request):
 @permission_classes([IsAuthenticated])
 def create_checkout_session(request):
     stripe.api_key =API_KEY
-    sub_obj=Subscription_details.objects.get(user=request.user)
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
