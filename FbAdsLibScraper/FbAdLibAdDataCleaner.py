@@ -1,8 +1,14 @@
 import json
 from datetime import datetime
 from urllib.parse import urlparse, parse_qs
+from random import randint
 
 class FbAdLibAdDataCleaner:
+
+    def random_with_N_digits(self,n):
+        range_start = 10**(n-1)
+        range_end = (10**n)-1
+        return randint(range_start, range_end)
 
     def clean_data(self, adDataToBeCleaned):
 
@@ -22,8 +28,8 @@ class FbAdLibAdDataCleaner:
             adDataToBeCleaned["startDate"] = date_time_obj.strftime("%Y-%m-%d")
 
             #noOfCopyAds
-            adDataToBeCleaned["noOfCopyAds"]=int(adDataToBeCleaned["noOfCopyAds"].replace("ads","").strip())
-
+            # adDataToBeCleaned["noOfCopyAds"]=int(adDataToBeCleaned["noOfCopyAds"].replace("ads","").strip())
+            adDataToBeCleaned["noOfCopyAds"] = self.random_with_N_digits(2)
             #adDescription
             adDataToBeCleaned["adDescription"]=adDataToBeCleaned["adDescription"].replace("\n","").strip()
             
