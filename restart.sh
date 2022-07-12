@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source venv/bin/activate
+source Fbadslib-env/bin/activate
 pip install -r requirements.txt
 
 python manage.py makemigrations

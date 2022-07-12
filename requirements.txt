@@ -32,7 +32,7 @@ elasticsearch
 filelock
 future
 google-api-core
-google-aws4auth
+# google-aws4auth
 google-cloud-core
 google-cloud-secret-manager
 google-cloud-storage
