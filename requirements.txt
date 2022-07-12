@@ -2,10 +2,10 @@ asgiref==3.5.2
 async-generator==1.10
 attrs==21.4.0
 Automat==20.2.0
-# awsebcli
+awsebcli
 beautifulsoup4==4.11.1
-# boto3
-# botocore
+boto3
+botocore
 cachetools==5.2.0
 cement==2.8.2
 certifi==2022.5.18.1
