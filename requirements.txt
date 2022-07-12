@@ -52,7 +52,7 @@ opensearch-py==2.0.0
 outcome==1.2.0
 pandas==1.4.3
 parsel==1.6.0
-# Pillow==9.1.1
+Pillow==9.1.1
 platformdirs==2.5.1
 Protego==0.2.1
 proto-plus==1.20.6
