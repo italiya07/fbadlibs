@@ -31,14 +31,20 @@ class FbAdLibAdDataCleaner:
             adDataToBeCleaned["status"]=adDataToBeCleaned["status"].strip()
             adDataToBeCleaned["adID"]=adDataToBeCleaned["adID"].strip()
             adDataToBeCleaned["adMediaURL"]=adDataToBeCleaned["adMediaURL"].strip()
+            adDataToBeCleaned["adMediaThumbnail"]=adDataToBeCleaned["adMediaThumbnail"].strip()
             adDataToBeCleaned["adMediaType"]=adDataToBeCleaned["adMediaType"].strip()
             adDataToBeCleaned["adDescription"]=adDataToBeCleaned["adDescription"].strip()
             adDataToBeCleaned["ctaStatus"]=adDataToBeCleaned["ctaStatus"].strip()
             adDataToBeCleaned["displayURL"]=adDataToBeCleaned["displayURL"].strip()
             adDataToBeCleaned["headline"]=adDataToBeCleaned["headline"].strip()
             adDataToBeCleaned["purchaseURL"]=adDataToBeCleaned["purchaseURL"].strip()
-            parsed_url = urlparse(adDataToBeCleaned["purchaseURL"])
-            adDataToBeCleaned["purchaseURL"] = parse_qs(parsed_url.query)["u"][0]
+            try:
+                parsed_url = urlparse(adDataToBeCleaned["purchaseURL"])
+                adDataToBeCleaned["purchaseURL"] = parse_qs(parsed_url.query)["u"][0]
+            except Exception as ex:
+                print(f"Exception purchaseURL :-- {adDataToBeCleaned['purchaseURL']}")
+                print(ex)
+
             adDataToBeCleaned["pageInfo"]["name"]=adDataToBeCleaned["pageInfo"]["name"].strip()
             adDataToBeCleaned["pageInfo"]["url"]=adDataToBeCleaned["pageInfo"]["url"].strip()
             adDataToBeCleaned["pageInfo"]["logo"]=adDataToBeCleaned["pageInfo"]["logo"].strip()
