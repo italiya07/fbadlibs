@@ -159,7 +159,7 @@ cython_debug/
 
 .env.uat
 
-.env
+# .env
 
 static/
 
