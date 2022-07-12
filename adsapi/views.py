@@ -40,6 +40,7 @@ from django.http import (
 )
 from .decorators import subscription_required
 from .custom_permission import IsPostOrIsAuthenticated
+from datetime import datetime
 # Create your views here.
 
 User = get_user_model()
@@ -731,7 +732,10 @@ def check_sub_status(request):
     sub_status=stripe.Subscription.retrieve(
         sub_obj.subscription_id,
     )
-    r=rh.ResponseMsg(data={"status":sub_status.status},error=False,msg="Subscription status !!!!")
+    print(sub_status)
+    end_date=sub_status.current_period_end
+    plan_type=sub_status.plan.nickname
+    r=rh.ResponseMsg(data={"status":sub_status.status,"end_date":datetime.utcfromtimestamp(end_date).strftime('%b %d, %Y'),"plan_type":plan_type},error=False,msg="Subscription status !!!!")
     return Response(r.response, status=status.HTTP_200_OK)
 
 
