@@ -121,9 +121,9 @@ try:
 # "inspiretrendz.com",
 # "mshopo.com",
 # "ferristale.co.uk",
-    "conoreal.com",
+    # "conoreal.com",
     "reshline.com",
-    "ottowhale.com",
+    # "ottowhale.com",
           ]
     fbAdsLibScraper = FbAdsLibScraper(proxyUrls, fbadslibdomains)
     fbAdsLibScraper.startScraper()
