@@ -167,16 +167,16 @@ class FbAdsLibDataStore:
 
         
 
-    def update_ad(self, oldFbAdlibItem, noOfCopyAds, statusToBeUpdated=None):
+    def update_ad(self, oldFbAdlibItem, noOfCopyAds=None, statusToBeUpdated=None):
         today = self.get_today()
-        history = oldFbAdlibItem['history'][-1]['noOfCopyAds'] = noOfCopyAds
+        oldFbAdlibItem['history'][-1]['noOfCopyAds'] = noOfCopyAds
         query1={
                 "script":{
                     "inline":"ctx._source.history=params.history;ctx._source.status=params.status;ctx._source.noOfCopyAds=params.noOfCopyAds;ctx._source.lastUpdatedTime=params.lastUpdatedTime;ctx._source.lastUpdatedDate=params.lastUpdatedDate",
                     "lang": "painless",
                     "params":{
-                         "history":history,
-                         "noOfCopyAds": noOfCopyAds,
+                         "history":oldFbAdlibItem['history'],
+                         "noOfCopyAds": noOfCopyAds if noOfCopyAds else oldFbAdlibItem['noOfCopyAds'],
                          "lastUpdatedTime":int(time.time() * 1000),
                          "lastUpdatedDate":today.strftime('%d/%m/%Y'),
                          "status": statusToBeUpdated if statusToBeUpdated else oldFbAdlibItem['status'] 
@@ -236,7 +236,7 @@ class FbAdsLibDataStore:
 
             result=self.client.search(index=self.index_name, body=query)
             
-            print(f"Got the Match :- {result['hits']['hits']}")
+#             print(f"Got the Match :- {result['hits']['hits']}")
             
             if len(result['hits']['hits']) > 0:
                 """Hash Matched go for media url match"""
@@ -270,13 +270,13 @@ class FbAdsLibDataStore:
                     else:
                         """Media URL is not matched now go for Status Check!!"""
                         print("Data Points are same but media url is different")
+                        self.create_new_ad(newFbAdlibItem)
                         if storedAd["status"] == 'Active':
                             """Make Active ad as Inactive"""
                             """Create new ad"""
                             print("Make Active ad as Inactive")
                             print("Create new ad")
-                            self.update_ad(storedAd, "ctx._source.status='Inactive'")
-                            self.create_new_ad(newFbAdlibItem)
+                            self.update_ad(storedAd, None ,'Inactive')
             else:
                 self.create_new_ad(newFbAdlibItem)
 
