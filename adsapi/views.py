@@ -512,6 +512,62 @@ def FilterView(request):
     return Response(r.response, status=status.HTTP_200_OK)    
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+# @subscription_required
+@ensure_csrf_cookie
+def SavedAdFilterView(request):
+    savedad_obj=SaveAds.objects.filter(user__id=request.user.id)
+    serializer=SaveAdsSerializer(savedad_obj,many=True)
+    ad_list=[]
+    
+    for i in serializer.data:
+        print(i)
+        ad_list.append(i["ad"])
+
+    print(ad_list)
+
+    s = request.data.get('keywords')
+    str1=" AND ".join(s)
+    print(str1)
+    query={
+    "query": {
+        "bool": {
+        "must": [
+            {
+            "terms": {
+                "_id": ad_list
+            }
+            },
+            {
+            "query_string": {
+                "fields": ["*"],
+                "query": str1
+            }
+            }
+        ]
+        }
+    }
+    }
+
+    res=es.search(index=es_indice,body=query)
+    data=[]
+
+    if res["hits"]["hits"]:
+        for d in res["hits"]["hits"]:
+            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            d["_source"]["id"]=d["_id"]
+            data.append(d["_source"])
+        r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
+        return Response(r.response)
+
+    r=rh.ResponseMsg(data={},error=False,msg="Success")
+    return Response(r.response, status=status.HTTP_200_OK)    
+
+
 # @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
 # @ensure_csrf_cookie
