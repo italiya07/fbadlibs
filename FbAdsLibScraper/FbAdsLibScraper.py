@@ -46,7 +46,7 @@ class FbAdsLibScraper:
 
             result = []
             with ThreadPoolExecutor(max_workers=30) as exe:
-                result = exe.map(self.startAdScraper,combinedProxyAdList)
+                result = exe.map(self.startAdScraper,combinedProxyAdList[:1])
 
         except Exception as ex:
             print(f'fn.startDomainScraper Exception Occured !!!')
