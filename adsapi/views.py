@@ -680,7 +680,7 @@ def check_sub_status(request):
 
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def create_checkout_session(request):
     stripe.api_key =API_KEY
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
