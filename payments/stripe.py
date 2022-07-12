@@ -53,7 +53,16 @@ def set_paid_until(charge):
     stripe.api_key = API_KEY
     email = charge.customer_email
     current_period_end = charge.lines.data[0].period["end"]
-    
+    sub_obj=Subscription_details.objects.filter(user__email=email).first()
+    if sub_obj:
+        sub_status=stripe.Subscription.retrieve(
+            sub_obj.subscription_id,
+        )
+        if sub_status.status == "canceled":
+            sub_obj.subscription_id=charge.subscription
+            sub_obj.customer_id=charge.customer
+            sub_obj.save()
+            return True
     try:
         user = User.objects.get(email=email)
         subscription_details_obj=Subscription_details(user=user,subscription_id=charge.subscription,customer_id=charge.customer)
