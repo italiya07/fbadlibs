@@ -704,7 +704,7 @@ def cancel_subscription(request):
     cancel_sub=stripe.Subscription.delete(
         sub_obj.subscription_id,
     )
-    sub_obj.subscription_id="Cancelled"
+    sub_obj.subscription_id="Canceled"
     sub_obj.save()
     r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
