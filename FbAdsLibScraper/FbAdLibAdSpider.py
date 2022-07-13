@@ -217,6 +217,7 @@ class FbAdLibAdSpider:
             print(e)
             if driver:
                 driver.quit()
+            self.process_ad(fbAdlibItem)
         finally:
             print(f"Got Ad Details SuccessFully  ::::  {fbAdlibItem['adID']}")
             if driver:

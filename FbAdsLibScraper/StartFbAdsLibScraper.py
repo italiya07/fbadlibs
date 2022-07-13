@@ -1,22 +1,67 @@
 import time
-from datetime import datetime
+import datetime
 from FbAdsLibScraper import FbAdsLibScraper
+from opensearchpy import OpenSearch, RequestsHttpConnection
+from requests_aws4auth import AWS4Auth
 from decouple import config
+from datetime import timedelta
+
+def get_today():
+    # today = datetime.date.today()
+    today = (datetime.date.today() + datetime.timedelta(days=1))
+    return today
+
+def update_all_ads():
+    region = 'us-east-1'
+    host = 'search-fbadslib-dev-vtocnlf6uhf7y24wy53x6cz2u4.us-east-1.es.amazonaws.com'
+    service = 'es'
+    index_name = 'fbadslib-dev-test'
+    awsauth = AWS4Auth(config("aws_access_key_id"), config("aws_secret_access_key"), region, service)
+    client = OpenSearch(
+                        hosts = [{'host': host, 'port': 443}],
+                        http_auth = awsauth,
+                        use_ssl = True,
+                        verify_certs = True,
+                        connection_class = RequestsHttpConnection
+                        )
+    today = get_today()
+    
+    query1 = {
+            "query": {
+            "bool": {
+                "must_not": [
+                {
+                    "match": {
+                        "lastUpdatedDate.keyword": today.strftime("%d/%m/%Y")
+                    }
+                }
+                ]
+            }
+            }, 
+            "script": {
+            "lang":"painless",
+            "inline": "ctx._source.history.add(params)",
+            "params":{
+                        "date":today.strftime("%d/%m"),
+                        "noOfCopyAds": None
+                        }}
+        }
+    
+    try:
+        query_res=client.update_by_query(index=index_name,body=query1, refresh = True)
+        print(query_res)
+        print("Record updated successfully !!!!!")
+    except Exception as e:
+        print("Exception Occured while updating an Ad to Elastic Search :")
+        print(e)
+    finally:
+        return
 
 try:
     t1 = time.perf_counter()
-    print(f"***********************************Scraper Start : { datetime.now().strftime('%d/%m/%Y %H:%M:%S') } ***********************")
+    print(f"***********************************Scraper Start : { datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S') } ***********************")
     proxyUrls=[
-        "192.187.111.82:17066",
-        "198.204.249.42:19002",
-        "69.30.217.114:19001",
-        "173.208.152.162:19009",
-        "198.204.241.50:17020",
-        "192.187.111.82:17062",
-        "107.150.42.74:17001",
-        "192.187.111.82:17093",
-        "107.150.42.146:19017",
-        "198.204.249.42:19020"
+        '198.204.249.42:19002', '69.30.217.114:19001', '107.150.42.146:19017', '198.204.249.42:19020'
     ]
     fbadslibdomains=[
 #             "conoreal.com",
@@ -123,12 +168,15 @@ try:
 # "ferristale.co.uk",
     # "conoreal.com",
     "reshline.com",
+    # "createmusic.fm",
+    # "bestsolarlighting"
     # "ottowhale.com",
           ]
     fbAdsLibScraper = FbAdsLibScraper(proxyUrls, fbadslibdomains)
     fbAdsLibScraper.startScraper()
     t2 = time.perf_counter()
-    print(f"***********************************Scraper End : { datetime.now().strftime('%d/%m/%Y %H:%M:%S') } ***********************")
+    update_all_ads()
+    print(f"***********************************Scraper End : { datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S') } ***********************")
     print(f'Scraper Took:{t2 - t1} seconds')
 except Exception as ex:
     print("Exception Occured While Scrapping :-")
@@ -147,5 +195,7 @@ except Exception as ex:
 # except Exception as ex:
 #     print("Exception While Scrapping :-")
 #     print(ex)
+
+
 
 
