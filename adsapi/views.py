@@ -167,7 +167,7 @@ def logoutview(request):
     }
     return response
 
-# @method_decorator(subscription_required,name='list')
+@method_decorator(subscription_required,name='list')
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
         user_obj=request.user
@@ -329,7 +329,7 @@ class ManageSaveAds(viewsets.ViewSet):
     #     r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
     #     return Response(r.response)
     
-    # @method_decorator(subscription_required)
+    @method_decorator(subscription_required)
     def create(self,request):
         data=request.data
         user=request.user
@@ -368,7 +368,7 @@ class ManageSaveAds(viewsets.ViewSet):
         return Response(r.response)
  
  
-    # @method_decorator(subscription_required)
+    @method_decorator(subscription_required)
     def destroy(self,request,pk=None):
         user_obj=request.user
         ad_obj=SaveAds.objects.get(user__id=user_obj.id,ad=pk)
@@ -399,7 +399,7 @@ class ManageSaveAds(viewsets.ViewSet):
     #     r=rh.ResponseMsg(data={},error=False,msg="Data not found")
     #     return Response(r.response)
     
-    # @method_decorator(subscription_required)
+    @method_decorator(subscription_required)
     def list(self,request,pk=None):
         user=request.user
         add=[]
