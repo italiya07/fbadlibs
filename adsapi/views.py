@@ -704,8 +704,8 @@ def cancel_subscription(request):
     cancel_sub=stripe.Subscription.delete(
         sub_obj.subscription_id,
     )
-    stripe.Customer.delete(sub_obj.customer_id)
-    sub_obj.delete()
+    sub_obj.subscription_id=""
+    sub_obj.save()
     r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
  
@@ -727,6 +727,8 @@ def fetch_payment_method(request):
             end_date=sub_status.current_period_end
             r=rh.ResponseMsg(data={"status":sub_status.status,"end_date":datetime.datetime.utcfromtimestamp(end_date).strftime('%b %d, %Y'),"plan_type":sub_status.plan.nickname,"paydement_method_id":payment_details.data[0].id,"card_brand":payment_details.data[0].card["brand"],"country":payment_details.data[0].card["country"],"exp_month":payment_details.data[0].card["exp_month"],"exp_year":payment_details.data[0].card["exp_year"],"last4":payment_details.data[0].card["last4"],"funding":payment_details.data[0].card["funding"]},error=False,msg="Thank You for Payment !!!")
             return Response(r.response, status=status.HTTP_200_OK)
+        r=rh.ResponseMsg(data={"status":"Cancelled","paydement_method_id":payment_details.data[0].id,"card_brand":payment_details.data[0].card["brand"],"country":payment_details.data[0].card["country"],"exp_month":payment_details.data[0].card["exp_month"],"exp_year":payment_details.data[0].card["exp_year"],"last4":payment_details.data[0].card["last4"],"funding":payment_details.data[0].card["funding"]},error=False,msg="Subscription is cancelled")
+        return Response(r.response, status=status.HTTP_200_OK)
     r=rh.ResponseMsg(data={},error=False,msg="Subscription is cancelled")
     return Response(r.response, status=status.HTTP_200_OK)
 
