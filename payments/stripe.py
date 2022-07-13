@@ -58,7 +58,7 @@ def set_paid_until(charge):
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
         )
-        if sub_status.status == "canceled":
+        if sub_status.status == "Canceled":
             sub_obj.subscription_id=charge.subscription
             sub_obj.customer_id=charge.customer
             sub_obj.save()
