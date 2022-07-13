@@ -782,7 +782,7 @@ def create_checkout_session(request):
             print(e)
             r=rh.ResponseMsg(data={},error=True,msg=str(e))
             return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
@@ -790,3 +790,24 @@ def create_checkout_session(request):
         if sub_status.status == "active":
             r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
             return Response(r.response, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def getCtaStatus(request):
+    query={
+        "query": {
+            "match_all": {}
+        }
+    }
+
+    res=es.search(index=es_indice,body=query)
+    cta_status=[]
+    if res["hits"]["hits"]:
+        for d in res["hits"]["hits"]:
+            cta_status.append(d["_source"]["ctaStatus"])
+        
+        set_cta=set(cta_status)
+        r=rh.ResponseMsg(data={"cta_status":set_cta},error=False,msg="API is working successfully")
+        return Response(r.response)
+
+    r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
+    return Response(r.response)
