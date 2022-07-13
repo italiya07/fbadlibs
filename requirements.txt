@@ -28,7 +28,7 @@ djangorestframework
 djangorestframework-jwt
 djangorestframework-simplejwt
 elastic-transport
-elasticsearch
+elasticsearch==7.15.0
 filelock
 future
 google-api-core
