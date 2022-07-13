@@ -720,7 +720,7 @@ def fetch_payment_method(request):
             customer=sub_obj.customer_id,
             type="card",
         )
-        if sub_obj.susubscription_id != "Canceled":
+        if sub_obj.subscription_id != "Canceled":
             sub_status=stripe.Subscription.retrieve(
                 sub_obj.subscription_id,
             )
@@ -752,7 +752,7 @@ def fetch_payment_method(request):
 def create_checkout_session(request):
     stripe.api_key =API_KEY
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
-    if sub_obj.subscription_id != "Canceled":
+    if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
         )
