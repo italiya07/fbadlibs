@@ -27,8 +27,10 @@ django-storages
 djangorestframework
 djangorestframework-jwt
 djangorestframework-simplejwt
-elastic-transport
-elasticsearch==8.3.1
+# elastic-transport
+# elasticsearch==8.3.1
+elasticsearch==7.15.0
+elasticsearch-dsl==7.4.0
 filelock
 future
 google-api-core
