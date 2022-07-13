@@ -50,8 +50,8 @@ class FbAdsLibDataStore:
                 raise ex
                 
     def get_today(self):
-        today = datetime.date.today()
-        # today = (datetime.date.today() + datetime.timedelta(days=1))
+        # today = datetime.date.today()
+        today = (datetime.date.today() + datetime.timedelta(days=1))
         return today
         
             
@@ -131,77 +131,37 @@ class FbAdsLibDataStore:
             print(e)
         finally:
             return
-    
-    def update_all_ads(self):
-        today = self.get_today()
-        
-        query1 = {
-              "query": {
-                "bool": {
-                  "must_not": [
-                    {
-                        "match": {
-                            "lastUpdatedDate.keyword": today.strftime("%d/%m/%Y")
-                        }
-                    }
-                  ]
-                }
-              }, 
-             "script": {
-               "lang":"painless",
-               "inline": "ctx._source.history.add(params)",
-               "params":{
-                         "date":today.strftime("%d/%m"),
-                         "noOfCopyAds": None
-                         }}
-            }
-        
-        try:
-            query_res=self.client.update_by_query(index=self.index_name,body=query1, refresh = True)
-            print("Record updated successfully !!!!!")
-        except Exception as e:
-            print("Exception Occured while updating an Ad to Elastic Search :")
-            print(e)
-        finally:
-            return
 
         
 
     def update_ad(self, oldFbAdlibItem, noOfCopyAds=None, statusToBeUpdated=None):
         today = self.get_today()
-        oldFbAdlibItem['history'][-1]['noOfCopyAds'] = noOfCopyAds
+
+        if oldFbAdlibItem["_source"]['lastUpdatedDate'] == today.strftime('%d/%m/%Y'):
+            oldFbAdlibItem["_source"]['history'][-1]['noOfCopyAds'] = noOfCopyAds
+        else:
+            oldFbAdlibItem["_source"]['history'].append({
+                            "date":today.strftime("%d/%m"),
+                            "noOfCopyAds": noOfCopyAds
+                            })
+
         query1={
                 "script":{
                     "inline":"ctx._source.history=params.history;ctx._source.status=params.status;ctx._source.noOfCopyAds=params.noOfCopyAds;ctx._source.lastUpdatedTime=params.lastUpdatedTime;ctx._source.lastUpdatedDate=params.lastUpdatedDate",
                     "lang": "painless",
                     "params":{
-                         "history":oldFbAdlibItem['history'],
-                         "noOfCopyAds": noOfCopyAds if noOfCopyAds else oldFbAdlibItem['noOfCopyAds'],
-                         "lastUpdatedTime":int(time.time() * 1000),
-                         "lastUpdatedDate":today.strftime('%d/%m/%Y'),
-                         "status": statusToBeUpdated if statusToBeUpdated else oldFbAdlibItem['status'] 
-                         }
+                        "history":oldFbAdlibItem["_source"]['history'],
+                        "noOfCopyAds": noOfCopyAds if noOfCopyAds else oldFbAdlibItem["_source"]['noOfCopyAds'],
+                        "lastUpdatedTime":int(time.time() * 1000),
+                        "lastUpdatedDate":today.strftime('%d/%m/%Y'),
+                        "status": statusToBeUpdated if statusToBeUpdated else oldFbAdlibItem["_source"]['status'] 
+                        }
                 },
                 "query":{
-                    "bool": {
-                        "must": [
-                                {
-                                "match": {
-                                    "hash.keyword": oldFbAdlibItem["hash"]
-                                }
-                                },
-                                {
-                                "match": {
-                                    "status.keyword": oldFbAdlibItem['status']
-                                }
-                                },
-                                {
-                                "match": {
-                                    "adMediaURL.keyword": oldFbAdlibItem['adMediaURL']}
-                                }
-                            ]
-                            }
-                     }
+                    "terms": {
+                          "_id": [oldFbAdlibItem["_id"]]
+                             }
+                    }
                 }
 
         try:
@@ -241,47 +201,29 @@ class FbAdsLibDataStore:
             if len(result['hits']['hits']) > 0:
                 """Hash Matched go for media url match"""
                 for storedAdData in result['hits']['hits']:
-                    storedAd = storedAdData["_source"]
-                    if storedAd['adMediaURL'] == newFbAdlibItem['adMediaURL']:
-                        """Media URL is also matched go for Status Check!!"""
-                        print("Media URL is also matched go for Status Check!!")
-                        print(f"Status is :- {storedAd['status']}")
+                    if newFbAdlibItem['status'] == "Active":
+                        if storedAdData["_source"]["status"] == 'Active':
+                            """Just Update No. Of ads and finish !!"""
+                            print('new --> active & old --> active |||| Just Update No. Of ads and finish !!')
+                            self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'])
+                        elif storedAdData["_source"]["status"] == 'Inactive':
+                            """Make it Active and update ad count!!"""
+                            print('new --> active & old --> Inactive |||| Make old Active and update ad count!!')
+                            self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'], 'Active')
 
-                        if newFbAdlibItem['status'] == "Active":
-                            if storedAd["status"] == 'Active':
-                                """Just Update No. Of ads and finish !!"""
-                                print('new --> active & old --> active |||| Just Update No. Of ads and finish !!')
-                                self.update_ad(storedAd, newFbAdlibItem['noOfCopyAds'])
-                            elif storedAd["status"] == 'Inactive':
-                                """Make it Active and update ad count!!"""
-                                print('new --> active & old --> Inactive |||| Make old Active and update ad count!!')
-                                self.update_ad(storedAd, newFbAdlibItem['noOfCopyAds'], 'Active')
-
-                        elif newFbAdlibItem['status'] == "Inactive":
-                            if storedAd["status"] == 'Active':
-                                """Just Update No. Of ads and finish !!"""
-                                print('new --> Inactive & old --> active |||| Make old Inactive and update ad count!!')
-                                self.update_ad(storedAd, newFbAdlibItem['noOfCopyAds'], 'Inactive')
-                            elif storedAd["status"] == 'Inactive':
-                                """Make it Active and update ad count!!"""
-                                print('new --> Inactive & old --> Inactive |||| Just Update No. Of ads and finish !!')
-                                self.update_ad(storedAd, newFbAdlibItem['noOfCopyAds'])
-
-                    else:
-                        """Media URL is not matched now go for Status Check!!"""
-                        print("Data Points are same but media url is different")
-                        self.create_new_ad(newFbAdlibItem)
-                        if storedAd["status"] == 'Active':
-                            """Make Active ad as Inactive"""
-                            """Create new ad"""
-                            print("Make Active ad as Inactive")
-                            print("Create new ad")
-                            self.update_ad(storedAd, None ,'Inactive')
+                    elif newFbAdlibItem['status'] == "Inactive":
+                        if storedAdData["_source"]["status"] == 'Active':
+                            """Just Update No. Of ads and finish !!"""
+                            print('new --> Inactive & old --> active |||| Make old Inactive and update ad count!!')
+                            self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'], 'Inactive')
+                        elif storedAdData["_source"]["status"] == 'Inactive':
+                            """Make it Active and update ad count!!"""
+                            print('new --> Inactive & old --> Inactive |||| Just Update No. Of ads and finish !!')
+                            self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'])  
             else:
                 self.create_new_ad(newFbAdlibItem)
 
             print(f"SuccessFull Data Stored for Ad :- {newFbAdlibItem['adID']}")
-            self.update_all_ads()
         except Exception as ex:
             print("Exception Occured while saving ad")
             print(ex)
