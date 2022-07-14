@@ -13,7 +13,7 @@ def subscription_required(view_func):
         sub_obj=Subscription_details.objects.filter(user=request.user).first()
         if sub_obj:
             if sub_obj.sub_status == False:
-                r=rh.ResponseMsg(data={"subscription":False},error=False,msg="Subscription Required")
+                r=rh.ResponseMsg(data={"subscription":False},error=True,msg="Subscription Required")
                 return Response(r.response,status=status.HTTP_200_OK)
 
             sub_status=stripe.Subscription.retrieve(
@@ -21,7 +21,7 @@ def subscription_required(view_func):
             )
             if sub_status.status == "active":
                 return view_func(request,*args,**kwargs)
-        r=rh.ResponseMsg(data={"subscription":False},error=False,msg="Subscription Required")
+        r=rh.ResponseMsg(data={"subscription":False},error=True,msg="Subscription Required")
         return Response(r.response,status=status.HTTP_200_OK)
     return wrap
     
