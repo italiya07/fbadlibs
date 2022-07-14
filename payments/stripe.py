@@ -59,12 +59,13 @@ def set_paid_until(charge):
         #     sub_obj.subscription_id,
         # )
         sub_obj.subscription_id=charge.subscription
-        sub_obj.sub_status=True
+        sub_obj.sub_status = True
         sub_obj.save()
         return True
     try:
         user = User.objects.get(email=email)
-        subscription_details_obj=Subscription_details(user=user,subscription_id=charge.subscription,customer_id=charge.customer,sub_status=True)
+        subscription_details_obj=Subscription_details(user=user,subscription_id=charge.subscription,customer_id=charge.customer)
+        subscription_details_obj.sub_status = True
         subscription_details_obj.save()
     except User.DoesNotExist:
         logger.warning(

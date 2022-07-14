@@ -751,9 +751,9 @@ def fetch_payment_method(request):
 @permission_classes([IsAuthenticated])
 def create_checkout_session(request):
     stripe.api_key =API_KEY
-    customer_id=""
-    sub_obj=Subscription_details.objects.filter(user=request.user).first()
     
+    sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    customer_id=sub_obj.customer_id
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
@@ -772,11 +772,11 @@ def create_checkout_session(request):
     # if sub_obj:
     #     if sub_obj.sub_status ==  False:
     #         customer_id=sub_obj.customer_id
-    
+
     try:
         checkout_session = stripe.checkout.Session.create(
-            customer_email=request.user.email,
-            # customer=customer_id,
+            # customer_email=request.user.email,
+            customer=customer_id,
             line_items=[
                 {
                     'price': request.data.get("lookup_key"),
