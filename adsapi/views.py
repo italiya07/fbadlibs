@@ -167,7 +167,7 @@ def logoutview(request):
     }
     return response
 
-@method_decorator(subscription_required,name='list')
+# @method_decorator(subscription_required,name='list')
 class getAllAds(viewsets.ViewSet):
     def list(self,request):
         user_obj=request.user
@@ -329,7 +329,7 @@ class ManageSaveAds(viewsets.ViewSet):
     #     r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
     #     return Response(r.response)
     
-    @method_decorator(subscription_required)
+    # @method_decorator(subscription_required)
     def create(self,request):
         data=request.data
         user=request.user
@@ -368,7 +368,7 @@ class ManageSaveAds(viewsets.ViewSet):
         return Response(r.response)
  
  
-    @method_decorator(subscription_required)
+    # @method_decorator(subscription_required)
     def destroy(self,request,pk=None):
         user_obj=request.user
         ad_obj=SaveAds.objects.get(user__id=user_obj.id,ad=pk)
@@ -399,7 +399,7 @@ class ManageSaveAds(viewsets.ViewSet):
     #     r=rh.ResponseMsg(data={},error=False,msg="Data not found")
     #     return Response(r.response)
     
-    @method_decorator(subscription_required)
+    # @method_decorator(subscription_required)
     def list(self,request,pk=None):
         user=request.user
         add=[]
@@ -704,7 +704,7 @@ def cancel_subscription(request):
     cancel_sub=stripe.Subscription.delete(
         sub_obj.subscription_id,
     )
-    sub_obj.subscription_id="Canceled"
+    sub_obj.sub_status=False
     sub_obj.save()
     r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
@@ -720,7 +720,7 @@ def fetch_payment_method(request):
             customer=sub_obj.customer_id,
             type="card",
         )
-        if sub_obj.subscription_id != "Canceled":
+        if sub_obj.sub_status == True:
             sub_status=stripe.Subscription.retrieve(
                 sub_obj.subscription_id,
             )
@@ -751,20 +751,25 @@ def fetch_payment_method(request):
 @permission_classes([IsAuthenticated])
 def create_checkout_session(request):
     stripe.api_key =API_KEY
+    customer_id=""
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    if sub_obj:
+        sub_status=stripe.Subscription.retrieve(
+            sub_obj.subscription_id,
+        )
+        if sub_status.status == "active":
+            r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
+            return Response(r.response, status=status.HTTP_200_OK)
+    
+    # if sub_obj:
+    #     if sub_obj.sub_status ==  False:
+    #         customer_id=sub_obj.customer_id
 
-    if sub_obj.subscription_id == "Canceled":
+    if not sub_obj or sub_obj.sub_status == False :
         try:
-            
-            # prices = stripe.Price.list(
-            #     lookup_keys=[request.data.get("lookup_key")],
-            #     expand=['data.product']
-
-            # )
-            # print("prices")
-            # print(prices)
             checkout_session = stripe.checkout.Session.create(
                 customer_email=request.user.email,
+                # customer=customer_id,
                 line_items=[
                     {
                         'price': request.data.get("lookup_key"),
@@ -783,14 +788,7 @@ def create_checkout_session(request):
             r=rh.ResponseMsg(data={},error=True,msg=str(e))
             return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    if sub_obj:
-        sub_status=stripe.Subscription.retrieve(
-            sub_obj.subscription_id,
-        )
-        if sub_status.status == "active":
-            r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
-            return Response(r.response, status=status.HTTP_200_OK)
-
+    
 @api_view(['GET'])
 def getCtaStatus(request):
     query={

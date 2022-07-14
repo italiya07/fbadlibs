@@ -113,3 +113,4 @@ class Subscription_details(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     customer_id=models.CharField(max_length=122,null=False,blank=False)
     subscription_id=models.CharField(max_length=122)
+    sub_status=models.BooleanField(default=False)

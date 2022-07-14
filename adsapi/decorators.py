@@ -11,7 +11,7 @@ def subscription_required(view_func):
         stripe.api_key = API_KEY
         sub_obj=Subscription_details.objects.filter(user=request.user).first()
         if sub_obj:
-            if sub_obj.subscription_id == "Canceled":
+            if sub_obj.sub_status == False:
                 return Response("Subscription Required", status=status.HTTP_200_OK)
 
             sub_status=stripe.Subscription.retrieve(
