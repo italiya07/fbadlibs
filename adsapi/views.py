@@ -753,40 +753,47 @@ def create_checkout_session(request):
     stripe.api_key =API_KEY
     customer_id=""
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
         )
+
         if sub_status.status == "active":
             r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
             return Response(r.response, status=status.HTTP_200_OK)
-    
+        
+        if sub_obj.sub_status == True :
+            r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
+            return Response(r.response, status=status.HTTP_200_OK)
+        else :
+            pass
+            
     # if sub_obj:
     #     if sub_obj.sub_status ==  False:
     #         customer_id=sub_obj.customer_id
+    
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            customer_email=request.user.email,
+            # customer=customer_id,
+            line_items=[
+                {
+                    'price': request.data.get("lookup_key"),
+                    'quantity': 1,
+                },
+            ],
+            mode='subscription',
+            success_url=config("front_end") +'/success.html?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=config("front_end") + '/cancel.html',
+        )
+        r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
+        return Response(r.response, status=status.HTTP_200_OK)
 
-    if not sub_obj or sub_obj.sub_status == False :
-        try:
-            checkout_session = stripe.checkout.Session.create(
-                customer_email=request.user.email,
-                # customer=customer_id,
-                line_items=[
-                    {
-                        'price': request.data.get("lookup_key"),
-                        'quantity': 1,
-                    },
-                ],
-                mode='subscription',
-                success_url=config("front_end") +'/success.html?session_id={CHECKOUT_SESSION_ID}',
-                cancel_url=config("front_end") + '/cancel.html',
-            )
-            r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
-            return Response(r.response, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            print(e)
-            r=rh.ResponseMsg(data={},error=True,msg=str(e))
-            return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        print(e)
+        r=rh.ResponseMsg(data={},error=True,msg=str(e))
+        return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
 @api_view(['GET'])
