@@ -706,7 +706,7 @@ def cancel_subscription(request):
     )
     sub_obj.sub_status=False
     sub_obj.save()
-    r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
+    r=rh.ResponseMsg(data={'status':'Deactivated'},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
  
 @api_view(['GET'])
