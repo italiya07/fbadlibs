@@ -784,7 +784,7 @@ def create_checkout_session(request):
                 },
             ],
             mode='subscription',
-            success_url=config("front_end") +'/success.html?session_id={CHECKOUT_SESSION_ID}',
+            success_url=config("front_end") +'/?session_id={CHECKOUT_SESSION_ID}',
             cancel_url=config("front_end") + '/cancel.html',
         )
         r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
