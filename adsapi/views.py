@@ -731,6 +731,8 @@ def fetch_payment_method(request):
         
         r=rh.ResponseMsg(data={"status":"Canceled","paydement_method_id":payment_details.data[0].id,"card_brand":payment_details.data[0].card["brand"],"country":payment_details.data[0].card["country"],"exp_month":payment_details.data[0].card["exp_month"],"exp_year":payment_details.data[0].card["exp_year"],"last4":payment_details.data[0].card["last4"],"funding":payment_details.data[0].card["funding"]},error=False,msg="Subscription is cancelled")
         return Response(r.response, status=status.HTTP_200_OK)
+    r=rh.ResponseMsg(data={},error=False,msg="No subscription is active")
+    return Response(r.response, status=status.HTTP_200_OK)
 # @api_view(['GET'])
 # # @subscription_required
 # @permission_classes([IsAuthenticated])
