@@ -122,37 +122,41 @@ def loginview(request):
     password=request.data.get('password')
     # decMessage = fernet.decrypt(password.encode('utf-8')).decode()
     user=User.objects.filter(email=email).first()
-    if user and user.check_password(password) and user.is_active:
-        authenticate(email=email, password=user.check_password(password))
-        response = Response() 
-        access_token = token.generate_access_token(user)
-        refresh_token = token.generate_refresh_token(user)
-        response.set_cookie(
-                    key = 'access_token', 
-                    value = access_token,
-                    expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
-                    secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                )
-        response.set_cookie(
-                    key = 'refresh_token', 
-                    value = refresh_token,
-                    expires = datetime.datetime.utcnow()+timedelta(seconds=int(config('REFRESH_TOKEN_EXPIRE_TIME_SECONDS'))),
-                    secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                )
-        # csrf.get_token(request)
-        response.data={
-            "error": False,
-            "data":{},
-            "message": "Successfully Login"
-        }
-        return response
-    else:
-        r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not exist.")
-        return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+    if user :
+        if user.check_password(password) and user.is_active:
+            authenticate(email=email, password=user.check_password(password))
+            response = Response() 
+            access_token = token.generate_access_token(user)
+            refresh_token = token.generate_refresh_token(user)
+            response.set_cookie(
+                        key = 'access_token', 
+                        value = access_token,
+                        expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
+                        secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                    )
+            response.set_cookie(
+                        key = 'refresh_token', 
+                        value = refresh_token,
+                        expires = datetime.datetime.utcnow()+timedelta(seconds=int(config('REFRESH_TOKEN_EXPIRE_TIME_SECONDS'))),
+                        secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                    )
+            # csrf.get_token(request)
+            response.data={
+                "error": False,
+                "data":{},
+                "message": "Successfully Login"
+            }
+            return response
+        else:
+            r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not match.")
+            return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+    
+    r=rh.ResponseMsg(data={},error=True,msg="User does not exist with us.")
+    return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def logoutview(request):
