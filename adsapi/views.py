@@ -920,6 +920,7 @@ def SavedAdPhraseFilterView(request):
     }
 
     res=es.search(index=es_indice,body=query)
+    data=[]
 
     if res["hits"]["hits"]:
         for d in res["hits"]["hits"]:
