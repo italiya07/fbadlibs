@@ -849,13 +849,12 @@ def getCtaStatus(request):
 @ensure_csrf_cookie
 def PhraseFilterView(request):
     s = request.data.get('phrase')
-    str1=" ".join(s)
-    print(str1)
+    
     query={
         "query": {
             "multi_match": {
-            "query": str1,
-            "type": "cross_fields",
+            "query": s,
+            "type": "phrase",
             "fields": ["*"],
             "operator": "and"
             }
@@ -895,8 +894,7 @@ def SavedAdPhraseFilterView(request):
     print(ad_list)
 
     s = request.data.get('phrase')
-    str1=" ".join(s)
-    print(str1)
+    
     query={
     "query": {
             "bool": {
@@ -908,8 +906,8 @@ def SavedAdPhraseFilterView(request):
                 },
                 {
                 "multi_match": {
-                    "query": str1,
-                    "type": "cross_fields",
+                    "query": s,
+                    "type": "phrase",
                     "fields": ["*"],
                     "operator": "and"
                 }

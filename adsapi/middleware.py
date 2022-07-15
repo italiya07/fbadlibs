@@ -45,7 +45,7 @@ class SimpleMiddleware:
                 response = self.get_response(request)
 
                 response.set_cookie(
-                                key = settings.SIMPLE_JWT['AUTH_COOKIE'], 
+                                key = 'access_token', 
                                 value = access,
                                 expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
                                 secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
