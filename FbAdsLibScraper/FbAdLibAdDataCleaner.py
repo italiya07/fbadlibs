@@ -28,8 +28,8 @@ class FbAdLibAdDataCleaner:
             adDataToBeCleaned["startDate"] = date_time_obj.strftime("%Y-%m-%d")
 
             #noOfCopyAds
-            # adDataToBeCleaned["noOfCopyAds"]=int(adDataToBeCleaned["noOfCopyAds"].replace("ads","").strip())
-            adDataToBeCleaned["noOfCopyAds"] = self.random_with_N_digits(2)
+            adDataToBeCleaned["noOfCopyAds"]=int(adDataToBeCleaned["noOfCopyAds"].replace("ads","").strip())
+            # adDataToBeCleaned["noOfCopyAds"] = self.random_with_N_digits(2)
             #adDescription
             adDataToBeCleaned["adDescription"]=adDataToBeCleaned["adDescription"].replace("\n","").strip()
             
@@ -59,7 +59,5 @@ class FbAdLibAdDataCleaner:
         except Exception as ex:
             print(f"Exception Occured at Data Cleaning For Ad :---{adDataToBeCleaned['adID']}")
             print(ex)
-
-        print("After clean ad data :", adDataToBeCleaned["noOfCopyAds"])
 
         return adDataToBeCleaned
