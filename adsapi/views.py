@@ -853,7 +853,7 @@ def PhraseFilterView(request):
     query={
         "query": {
             "multi_match": {
-            "query": s,
+            "query": s.strip(),
             "type": "phrase",
             "fields": ["*"],
             "operator": "and"
@@ -906,7 +906,7 @@ def SavedAdPhraseFilterView(request):
                 },
                 {
                 "multi_match": {
-                    "query": s,
+                    "query": s.strip(),
                     "type": "phrase",
                     "fields": ["*"],
                     "operator": "and"
