@@ -38,7 +38,9 @@ urlpatterns = [
     path('create_checkout_session/',create_checkout_session,name='create_checkout_session'),
     path('cancel_subscription/',cancel_subscription,name='cancel_subscription'),
     path('fetch_payment_method/',fetch_payment_method,name='fetch_payment_method'),
-    path('get_cta_status/',getCtaStatus,name='getCtaStatus'),
+    path('get_cta_status/',getCtaStatus,name='get_cta_status'),
+    path('phrase_search/',PhraseFilterView,name='phrase_search'),
+    path('savedad_phrase_search/',SavedAdPhraseFilterView,name='savedad_phrase_search'),
     # path('check_sub_status/',check_sub_status,name='check_sub_status'),
     path('', include(router.urls)),
 ]

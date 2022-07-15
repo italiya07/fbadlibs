@@ -843,4 +843,95 @@ def getCtaStatus(request):
     r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
     return Response(r.response)
 
-############
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+# @subscription_required
+@ensure_csrf_cookie
+def PhraseFilterView(request):
+    s = request.data.get('phrase')
+    str1=" ".join(s)
+    print(str1)
+    query={
+        "query": {
+            "multi_match": {
+            "query": str1,
+            "type": "cross_fields",
+            "fields": ["*"],
+            "operator": "and"
+            }
+        }
+    }
+
+    res=es.search(index=es_indice,body=query)
+    data=[]
+
+    if res["hits"]["hits"]:
+        for d in res["hits"]["hits"]:
+            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            d["_source"]["id"]=d["_id"]
+            data.append(d["_source"])
+        r=rh.ResponseMsg(data=data,error=False,msg="phrase searching")
+        return Response(r.response)
+
+    r=rh.ResponseMsg(data={},error=False,msg="Success")
+    return Response(r.response, status=status.HTTP_200_OK)    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+# @subscription_required
+@ensure_csrf_cookie
+def SavedAdPhraseFilterView(request):
+    savedad_obj=SaveAds.objects.filter(user__id=request.user.id)
+    serializer=SaveAdsSerializer(savedad_obj,many=True)
+    ad_list=[]
+    
+    for i in serializer.data:
+        print(i)
+        ad_list.append(i["ad"])
+
+    print(ad_list)
+
+    s = request.data.get('phrase')
+    str1=" ".join(s)
+    print(str1)
+    query={
+    "query": {
+            "bool": {
+            "must": [
+                {
+                "terms": {
+                        "_id": ad_list
+                    }
+                },
+                {
+                "multi_match": {
+                    "query": str1,
+                    "type": "cross_fields",
+                    "fields": ["*"],
+                    "operator": "and"
+                }
+                }
+            ]
+            }
+        }
+    }
+
+    res=es.search(index=es_indice,body=query)
+    data=[]
+
+    if res["hits"]["hits"]:
+        for d in res["hits"]["hits"]:
+            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            d["_source"]["id"]=d["_id"]
+            data.append(d["_source"])
+        r=rh.ResponseMsg(data=data,error=False,msg="phrase searching")
+        return Response(r.response)
+
+    r=rh.ResponseMsg(data={},error=False,msg="Success")
+    return Response(r.response, status=status.HTTP_200_OK)   
