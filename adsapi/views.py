@@ -122,37 +122,41 @@ def loginview(request):
     password=request.data.get('password')
     # decMessage = fernet.decrypt(password.encode('utf-8')).decode()
     user=User.objects.filter(email=email).first()
-    if user and user.check_password(password) and user.is_active:
-        authenticate(email=email, password=user.check_password(password))
-        response = Response() 
-        access_token = token.generate_access_token(user)
-        refresh_token = token.generate_refresh_token(user)
-        response.set_cookie(
-                    key = 'access_token', 
-                    value = access_token,
-                    expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
-                    secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                )
-        response.set_cookie(
-                    key = 'refresh_token', 
-                    value = refresh_token,
-                    expires = datetime.datetime.utcnow()+timedelta(seconds=int(config('REFRESH_TOKEN_EXPIRE_TIME_SECONDS'))),
-                    secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                    samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                )
-        # csrf.get_token(request)
-        response.data={
-            "error": False,
-            "data":{},
-            "message": "Successfully Login"
-        }
-        return response
-    else:
-        r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not exist.")
-        return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+    if user :
+        if user.check_password(password) and user.is_active:
+            authenticate(email=email, password=user.check_password(password))
+            response = Response() 
+            access_token = token.generate_access_token(user)
+            refresh_token = token.generate_refresh_token(user)
+            response.set_cookie(
+                        key = 'access_token', 
+                        value = access_token,
+                        expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
+                        secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                    )
+            response.set_cookie(
+                        key = 'refresh_token', 
+                        value = refresh_token,
+                        expires = datetime.datetime.utcnow()+timedelta(seconds=int(config('REFRESH_TOKEN_EXPIRE_TIME_SECONDS'))),
+                        secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                    )
+            # csrf.get_token(request)
+            response.data={
+                "error": False,
+                "data":{},
+                "message": "Successfully Login"
+            }
+            return response
+        else:
+            r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not match.")
+            return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+    
+    r=rh.ResponseMsg(data={},error=True,msg="User does not exist with us.")
+    return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def logoutview(request):
@@ -706,7 +710,7 @@ def cancel_subscription(request):
     )
     sub_obj.sub_status=False
     sub_obj.save()
-    r=rh.ResponseMsg(data={},error=False,msg="Deleted successfully")
+    r=rh.ResponseMsg(data={'status':'Deactivated'},error=False,msg="Deleted successfully")
     return Response(r.response, status=status.HTTP_200_OK)
  
 @api_view(['GET'])
@@ -731,6 +735,8 @@ def fetch_payment_method(request):
         
         r=rh.ResponseMsg(data={"status":"Canceled","paydement_method_id":payment_details.data[0].id,"card_brand":payment_details.data[0].card["brand"],"country":payment_details.data[0].card["country"],"exp_month":payment_details.data[0].card["exp_month"],"exp_year":payment_details.data[0].card["exp_year"],"last4":payment_details.data[0].card["last4"],"funding":payment_details.data[0].card["funding"]},error=False,msg="Subscription is cancelled")
         return Response(r.response, status=status.HTTP_200_OK)
+    r=rh.ResponseMsg(data={"status":"Inactive"},error=False,msg="No subscription is active")
+    return Response(r.response, status=status.HTTP_200_OK)
 # @api_view(['GET'])
 # # @subscription_required
 # @permission_classes([IsAuthenticated])
@@ -753,7 +759,6 @@ def create_checkout_session(request):
     stripe.api_key =API_KEY
     
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
-    customer_id=sub_obj.customer_id
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
@@ -767,7 +772,28 @@ def create_checkout_session(request):
             r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
             return Response(r.response, status=status.HTTP_200_OK)
         else :
-            pass
+            customer_id=sub_obj.customer_id
+            try:
+                checkout_session = stripe.checkout.Session.create(
+                    # customer_email=request.user.email,
+                    customer=customer_id,
+                    line_items=[
+                        {
+                            'price': request.data.get("lookup_key"),
+                            'quantity': 1,
+                        },
+                    ],
+                    mode='subscription',
+                    success_url=config("front_end") +'/?session_id={CHECKOUT_SESSION_ID}',
+                    cancel_url=config("front_end") + '/cancel.html',
+                )
+                r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
+                return Response(r.response, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                print(e)
+                r=rh.ResponseMsg(data={},error=True,msg=str(e))
+                return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
     # if sub_obj:
     #     if sub_obj.sub_status ==  False:
@@ -775,8 +801,8 @@ def create_checkout_session(request):
 
     try:
         checkout_session = stripe.checkout.Session.create(
-            # customer_email=request.user.email,
-            customer=customer_id,
+            customer_email=request.user.email,
+            # customer=customer_id,
             line_items=[
                 {
                     'price': request.data.get("lookup_key"),
