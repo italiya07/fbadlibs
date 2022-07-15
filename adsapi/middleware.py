@@ -44,6 +44,8 @@ class SimpleMiddleware:
 
                 response = self.get_response(request)
 
+                print(settings)
+
                 response.set_cookie(
                                 key = 'access_token', 
                                 value = access,
