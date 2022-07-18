@@ -152,7 +152,7 @@ def loginview(request):
             }
             return response
         else:
-            r=rh.ResponseMsg(data={},error=True,msg="Username and Password does not match.")
+            r=rh.ResponseMsg(data={},error=True,msg="Invalid email address or password")
             return Response(r.response, status=status.HTTP_404_NOT_FOUND)
     
     r=rh.ResponseMsg(data={},error=True,msg="User does not exist with us.")
