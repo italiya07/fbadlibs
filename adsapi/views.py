@@ -69,6 +69,8 @@ API_KEY = config("STRIPE_SECRET_KEY")
 #                                                   ExpiresIn=3600*24)
 #     return pre_signed_url
 
+
+# To check whether the user session is active or not.
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def Isalive(request): 
@@ -114,6 +116,7 @@ def Isalive(request):
             r=rh.ResponseMsg(data={"is_alive":False},error=False,msg="success")
             return Response(r.response,status=status.HTTP_200_OK)
 
+# Use login
 @api_view(['POST'])
 @permission_classes([AllowAny])
 # @ensure_csrf_cookie
@@ -159,6 +162,7 @@ def loginview(request):
     return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def logoutview(request):
     response = Response()
     logout(request)
@@ -171,8 +175,9 @@ def logoutview(request):
     }
     return response
 
-# @method_decorator(subscription_required,name='list')
+@method_decorator(subscription_required,name='list')
 class getAllAds(viewsets.ViewSet):
+    permission_classes=[IsPostOrIsAuthenticated]
     def list(self,request):
         user_obj=request.user
         query={
@@ -285,8 +290,7 @@ def Forgotpasswordview(request):
     r=rh.ResponseMsg(data={},error=False,msg="Success")
     return Response(r.response, status=status.HTTP_200_OK)    
     
-
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 @ensure_csrf_cookie
 def Change_password(request,token):
     if request.method == 'POST':
@@ -317,7 +321,9 @@ def Change_password(request,token):
         'form': form
     })    
 
+@method_decorator(subscription_required,name='list')
 class ManageSaveAds(viewsets.ViewSet):
+    permission_classes=[IsPostOrIsAuthenticated]
     # permission_classes=[AllowAny]
     # def create(self,request):
     #     data=request.data
@@ -434,8 +440,9 @@ class ManageSaveAds(viewsets.ViewSet):
         r=rh.ResponseMsg(data={},error=False,msg="Data not found")
         return Response(r.response)
 
+
 class contactSupport(viewsets.ViewSet):
-    # @method_decorator(subscription_required)
+    permission_classes=[IsPostOrIsAuthenticated]
     def create(self,request):
         email_sender=request.data.get('email')
         name=request.data.get('name')
@@ -452,7 +459,7 @@ class contactSupport(viewsets.ViewSet):
         r=rh.ResponseMsg(data={},error=False,msg="Email sent")
         return Response(r.response)
 
-
+# @method_decorator(subscription_required,name='list')
 class subAllAds(viewsets.ViewSet):
     # @method_decorator(subscription_required)
     def create(self,request):
@@ -485,6 +492,7 @@ class subAllAds(viewsets.ViewSet):
 @permission_classes([IsAuthenticated])
 # @subscription_required
 @ensure_csrf_cookie
+@method_decorator(subscription_required,name='list')
 def FilterView(request):
     s = request.data.get('keywords')
     str1=" AND ".join(s)
@@ -515,11 +523,11 @@ def FilterView(request):
     r=rh.ResponseMsg(data={},error=False,msg="Success")
     return Response(r.response, status=status.HTTP_200_OK)    
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 # @subscription_required
 @ensure_csrf_cookie
+@method_decorator(subscription_required,name='list')
 def SavedAdFilterView(request):
     savedad_obj=SaveAds.objects.filter(user__id=request.user.id)
     serializer=SaveAdsSerializer(savedad_obj,many=True)
@@ -699,7 +707,6 @@ def stripe_webhooks(request):
     return Response(r.response, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-# @subscription_required
 @permission_classes([IsAuthenticated])
 def cancel_subscription(request):
     stripe.api_key = API_KEY
@@ -714,7 +721,6 @@ def cancel_subscription(request):
     return Response(r.response, status=status.HTTP_200_OK)
  
 @api_view(['GET'])
-# @subscription_required
 @permission_classes([IsAuthenticated])
 def fetch_payment_method(request):
     stripe.api_key = API_KEY
@@ -759,6 +765,7 @@ def create_checkout_session(request):
     stripe.api_key =API_KEY
     
     sub_obj=Subscription_details.objects.filter(user=request.user).first()
+    print(sub_obj)
     if sub_obj:
         sub_status=stripe.Subscription.retrieve(
             sub_obj.subscription_id,
@@ -768,10 +775,7 @@ def create_checkout_session(request):
             r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
             return Response(r.response, status=status.HTTP_200_OK)
         
-        if sub_obj.sub_status == True :
-            r=rh.ResponseMsg(data={},error=False,msg="Subscription is already exist !!!!")
-            return Response(r.response, status=status.HTTP_200_OK)
-        else :
+        else:
             customer_id=sub_obj.customer_id
             try:
                 checkout_session = stripe.checkout.Session.create(
@@ -784,8 +788,8 @@ def create_checkout_session(request):
                         },
                     ],
                     mode='subscription',
-                    success_url=config("front_end") +'/?session_id={CHECKOUT_SESSION_ID}',
-                    cancel_url=config("front_end") + '/cancel.html',
+                    success_url=f'{config("front_end")}/',
+                    cancel_url=f'{config("front_end")}/payment',
                 )
                 r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
                 return Response(r.response, status=status.HTTP_200_OK)
@@ -794,7 +798,7 @@ def create_checkout_session(request):
                 print(e)
                 r=rh.ResponseMsg(data={},error=True,msg=str(e))
                 return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+    
     # if sub_obj:
     #     if sub_obj.sub_status ==  False:
     #         customer_id=sub_obj.customer_id
@@ -810,8 +814,8 @@ def create_checkout_session(request):
                 },
             ],
             mode='subscription',
-            success_url=config("front_end") +'/?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=config("front_end") + '/cancel.html',
+            success_url=f'{config("front_end")}/',
+            cancel_url=f'{config("front_end")}/payment',
         )
         r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
         return Response(r.response, status=status.HTTP_200_OK)
@@ -821,8 +825,8 @@ def create_checkout_session(request):
         r=rh.ResponseMsg(data={},error=True,msg=str(e))
         return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getCtaStatus(request):
     query={
         "query": {
@@ -845,7 +849,6 @@ def getCtaStatus(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-# @subscription_required
 @ensure_csrf_cookie
 def PhraseFilterView(request):
     s = request.data.get('phrase')
@@ -880,7 +883,6 @@ def PhraseFilterView(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-# @subscription_required
 @ensure_csrf_cookie
 def SavedAdPhraseFilterView(request):
     savedad_obj=SaveAds.objects.filter(user__id=request.user.id)
