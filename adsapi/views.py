@@ -217,7 +217,7 @@ class userManager(viewsets.ViewSet):
 # 89
     def create(self,request):
         data=request.data
-        if len(data["password"])<4:
+        if len(data["password"])<7:
             r=rh.ResponseMsg(data={},error=True,msg="Password is too short")
             return Response(r.response)
         serializer=UserSerializer(data=data)
