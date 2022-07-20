@@ -217,6 +217,9 @@ class userManager(viewsets.ViewSet):
 # 89
     def create(self,request):
         data=request.data
+        if len(data["password"])<7:
+            r=rh.ResponseMsg(data={},error=True,msg="Password is too short")
+            return Response(r.response)
         serializer=UserSerializer(data=data)
         obj=User.objects.filter(email=data["email"]).first()
         if obj:
@@ -343,7 +346,7 @@ class ManageSaveAds(viewsets.ViewSet):
     def create(self,request):
         data=request.data
         user=request.user
-        ad_obj=SaveAds.objects.filter(ad=data["ad"]).first()
+        ad_obj=SaveAds.objects.filter(ad=data["ad"], user=user).first()
         if ad_obj:
             r=rh.ResponseMsg(data={"id":ad_obj.id,"ad":ad_obj.ad},error=True,msg="Ad already saved")
             return Response(r.response)
@@ -495,8 +498,12 @@ class subAllAds(viewsets.ViewSet):
 @method_decorator(subscription_required,name='list')
 def FilterView(request):
     s = request.data.get('keywords')
-    str1=" AND ".join(s)
-    print(str1)
+    str1=[]
+    for i in s:
+        str1.append("*"+i+"*")
+    
+    str1=" AND ".join(str1)
+    
     query={
         "query": {
             "query_string": {
@@ -854,15 +861,24 @@ def PhraseFilterView(request):
     s = request.data.get('phrase')
     
     query={
-        "query": {
-            "multi_match": {
-            "query": s.strip(),
-            "type": "phrase",
-            "fields": ["*"],
-            "operator": "and"
+            "size": 10000,
+            "query": {
+                "bool": {
+                "must": []
+                }
             }
         }
-    }
+    
+    for i in s:
+        phrase_query={
+                "multi_match": {
+                    "query": i,
+                    "type": "phrase", 
+                    "fields": ["*"]
+                }
+        }
+        
+        query["query"]["bool"]["must"].append(phrase_query)
 
     res=es.search(index=es_indice,body=query)
     data=[]
@@ -905,19 +921,21 @@ def SavedAdPhraseFilterView(request):
                 "terms": {
                         "_id": ad_list
                     }
-                },
-                {
-                "multi_match": {
-                    "query": s.strip(),
-                    "type": "phrase",
-                    "fields": ["*"],
-                    "operator": "and"
-                }
                 }
             ]
             }
         }
     }
+
+    for i in s:
+        phrase_query={
+                "multi_match": {
+                    "query": i,
+                    "type": "phrase", 
+                    "fields": ["*"]
+                }
+        }
+        query["query"]["bool"]["must"].append(phrase_query)
 
     res=es.search(index=es_indice,body=query)
     data=[]
