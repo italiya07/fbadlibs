@@ -212,6 +212,9 @@ class userManager(viewsets.ViewSet):
 # 89
     def create(self,request):
         data=request.data
+        if len(data["password"])<4:
+            r=rh.ResponseMsg(data={},error=True,msg="Password is too short")
+            return Response(r.response)
         serializer=UserSerializer(data=data)
         obj=User.objects.filter(email=data["email"]).first()
         if obj:
@@ -487,8 +490,12 @@ class subAllAds(viewsets.ViewSet):
 @ensure_csrf_cookie
 def FilterView(request):
     s = request.data.get('keywords')
-    str1=" AND ".join(s)
-    print(str1)
+    str1=[]
+    for i in s:
+        str1.append("*"+i+"*")
+    
+    str1=" AND ".join(str1)
+    
     query={
         "query": {
             "query_string": {
