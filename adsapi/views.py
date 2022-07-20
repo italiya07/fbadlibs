@@ -861,15 +861,23 @@ def PhraseFilterView(request):
     s = request.data.get('phrase')
     
     query={
-        "query": {
-            "multi_match": {
-            "query": s.strip(),
-            "type": "phrase",
-            "fields": ["*"],
-            "operator": "and"
+            "size": 10000,
+            "query": {
+                "bool": {
+                "must": []
+                }
             }
         }
-    }
+    
+    for i in s:
+        phrase_query={
+                "multi_match": {
+                    "query": i,
+                    "type": "phrase", 
+                    "fields": ["*"]
+                }
+        }
+        query["query"]["bool"]["must"].append(phrase_query)
 
     res=es.search(index=es_indice,body=query)
     data=[]
@@ -912,19 +920,21 @@ def SavedAdPhraseFilterView(request):
                 "terms": {
                         "_id": ad_list
                     }
-                },
-                {
-                "multi_match": {
-                    "query": s.strip(),
-                    "type": "phrase",
-                    "fields": ["*"],
-                    "operator": "and"
-                }
                 }
             ]
             }
         }
     }
+
+    for i in s:
+        phrase_query={
+                "multi_match": {
+                    "query": i,
+                    "type": "phrase", 
+                    "fields": ["*"]
+                }
+        }
+        query["query"]["bool"]["must"].append(phrase_query)
 
     res=es.search(index=es_indice,body=query)
     data=[]
