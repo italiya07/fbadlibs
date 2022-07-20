@@ -859,7 +859,6 @@ def getCtaStatus(request):
 @ensure_csrf_cookie
 def PhraseFilterView(request):
     s = request.data.get('phrase')
-    
     query={
             "size": 10000,
             "query": {
@@ -872,7 +871,7 @@ def PhraseFilterView(request):
     for i in s:
         phrase_query={
                 "multi_match": {
-                    "query": i,
+                    "query": i.strip(),
                     "type": "phrase", 
                     "fields": ["*"]
                 }
@@ -930,7 +929,7 @@ def SavedAdPhraseFilterView(request):
     for i in s:
         phrase_query={
                 "multi_match": {
-                    "query": i,
+                    "query": i.strip(),
                     "type": "phrase", 
                     "fields": ["*"]
                 }
