@@ -346,7 +346,7 @@ class ManageSaveAds(viewsets.ViewSet):
     def create(self,request):
         data=request.data
         user=request.user
-        ad_obj=SaveAds.objects.filter(ad=data["ad"]).first()
+        ad_obj=SaveAds.objects.filter(ad=data["ad"], user=user).first()
         if ad_obj:
             r=rh.ResponseMsg(data={"id":ad_obj.id,"ad":ad_obj.ad},error=True,msg="Ad already saved")
             return Response(r.response)
@@ -877,6 +877,7 @@ def PhraseFilterView(request):
                     "fields": ["*"]
                 }
         }
+        
         query["query"]["bool"]["must"].append(phrase_query)
 
     res=es.search(index=es_indice,body=query)
