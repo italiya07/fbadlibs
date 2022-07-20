@@ -11,10 +11,11 @@ def subscription_required(view_func):
     def wrap(request,*args,**kwargs):
         stripe.api_key = API_KEY
         sub_obj=Subscription_details.objects.filter(user=request.user).first()
+        print(sub_obj)
         if sub_obj:
             if sub_obj.sub_status == False:
                 r=rh.ResponseMsg(data={"subscription":False},error=True,msg="Subscription Required")
-                return Response(r.response,status=status.HTTP_401_UNAUTHORIZED)
+                return Response(r.response,status=status.HTTP_403_FORBIDDEN)
 
             sub_status=stripe.Subscription.retrieve(
                 sub_obj.subscription_id,
@@ -23,6 +24,6 @@ def subscription_required(view_func):
                 return view_func(request,*args,**kwargs)
 
         r=rh.ResponseMsg(data={"subscription":False},error=True,msg="Subscription Required")
-        return Response(r.response,status=status.HTTP_401_UNAUTHORIZED)
+        return Response(r.response,status=status.HTTP_403_FORBIDDEN)
     return wrap
     
