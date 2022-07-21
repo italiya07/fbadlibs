@@ -175,19 +175,128 @@ def logoutview(request):
     }
     return response
 
-@method_decorator(subscription_required,name='list')
+@method_decorator(subscription_required,name='create')
 class getAllAds(viewsets.ViewSet):
-    permission_classes=[IsPostOrIsAuthenticated]
-    def list(self,request):
+    def create(self,request):
+        page_index=request.data.get("page_index")
+        startdate=request.data.get("startdate")
+        enddate=request.data.get("enddate")
+        adcount=request.data.get("adcount")
+        adstatus=request.data.get("adstatus")
+        fb_likes=request.data.get("fb_likes")
+        insta_followers=request.data.get("insta_followers")
+        media_type=request.data.get("media_type")
+        ctaStatus=request.data.get("cta_status")
+        s = request.data.get('keywords')
+        p = request.data.get('phrase')
+
         user_obj=request.user
         query={
-            "from": 1,
+            "from": page_index*8,
             "size": 8,
             "query": {
-                "match_all": {}
+                "bool":{
+                    "must":[]
+                }
             }
         }
 
+        if startdate and enddate :
+            date_query={
+                "range": {
+                    "startDate": {
+                    "gte": startdate,
+                    "lte": enddate
+                    }
+                }
+            }
+            query["query"]["bool"]["must"].append(date_query)
+
+        if adcount:
+            adcount_query={
+                "range": {
+                "noOfCopyAds": {
+                    "gte": adcount[0],
+                    "lte": adcount[1]
+                    }
+                }
+            }
+            query["query"]["bool"]["must"].append(adcount_query)
+
+        if adstatus:
+            status_query={
+                "match": {
+                    "status.keyword": adstatus
+                }
+            }
+            query["query"]["bool"]["must"].append(status_query)
+        
+        if fb_likes:
+            likes_query={
+                "range": {
+                    "pageInfo.platforms.likes": {
+                    "gte": likes_query[0],
+                    "lte": likes_query[1]
+                    }
+                }
+            }
+            query["query"]["bool"]["must"].append(likes_query)
+        
+        if insta_followers:
+            followers_query={
+                "range": {
+                    "pageInfo.platforms.followers": {
+                    "gte": insta_followers[0],
+                    "lte": insta_followers[1]
+                    }
+                }
+            }
+            query["query"]["bool"]["must"].append(followers_query)
+        
+        if media_type:
+            media_query={
+                "match": {
+                    "status.keyword": media_type
+                }
+            }
+            query["query"]["bool"]["must"].append(media_query)
+
+        if ctaStatus:
+            cta_query={
+                "match": {
+                    "status.keyword": ctaStatus
+                }
+            }
+            query["query"]["bool"]["must"].append(cta_query)
+
+        if s:
+            str1=[]
+            for i in s:
+                str1.append("*"+i+"*")
+            
+            str1=" AND ".join(str1)
+            
+            keyword_query={
+                "query": {
+                    "query_string": {
+                    "fields": ["*"],
+                    "query": str1
+                    }
+                }
+            }
+            query["query"]["bool"]["must"].append(keyword_query)
+
+        if p:
+            for i in p:
+                phrase_query={
+                        "multi_match": {
+                            "query": i.strip(),
+                            "type": "phrase", 
+                            "fields": ["*"]
+                        }
+                }
+            query["query"]["bool"]["must"].append(phrase_query)
+        
         ad_ids=[]
         saved_ad_obj=SaveAds.objects.filter(user__id=user_obj.id).all()
         serializer=SaveAdsSerializer(saved_ad_obj,many=True)
