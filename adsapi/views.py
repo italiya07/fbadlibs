@@ -181,7 +181,8 @@ class getAllAds(viewsets.ViewSet):
     def list(self,request):
         user_obj=request.user
         query={
-            "size": 10000,
+            "from": 1,
+            "size": 8,
             "query": {
                 "match_all": {}
             }
