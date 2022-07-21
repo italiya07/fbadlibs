@@ -30,7 +30,6 @@ urlpatterns = [
     path('forgot_password/', Forgotpasswordview , name='forgotpassword'),
     path('change_password/<str:token>', Change_password , name='change_password'),
     path('isalive/', Isalive , name='alive'),
-    path('filters/',FilterView,name='FilterView'),
     path('savedad_filters/',SavedAdFilterView,name='savedad_filters'),
     # path('stripe_paymentmethod/',Stripe_Payment_Method,name='Stripe_Payment_Method'),
     # path('card/',card,name='card'),

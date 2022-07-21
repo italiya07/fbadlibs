@@ -177,7 +177,6 @@ def logoutview(request):
 
 @method_decorator(subscription_required,name='create')
 class getAllAds(viewsets.ViewSet):
-
     # @method_decorator(subscription_required)
     def create(self,request):
         page_index=request.data.get("page_index")
@@ -218,8 +217,8 @@ class getAllAds(viewsets.ViewSet):
             adcount_query={
                 "range": {
                 "noOfCopyAds": {
-                    "gte": adcount[0],
-                    "lte": adcount[1]
+                    "gte": int(adcount[0]),
+                    "lte": int(adcount[1])
                     }
                 }
             }
@@ -236,9 +235,9 @@ class getAllAds(viewsets.ViewSet):
         if fb_likes:
             likes_query={
                 "range": {
-                    "pageInfo.platforms.likes": {
-                    "gte": likes_query[0],
-                    "lte": likes_query[1]
+                "pageInfo.platforms.likes": {
+                    "gte": int(fb_likes[0]),
+                    "lte": int(fb_likes[1])
                     }
                 }
             }
@@ -248,8 +247,8 @@ class getAllAds(viewsets.ViewSet):
             followers_query={
                 "range": {
                     "pageInfo.platforms.followers": {
-                    "gte": insta_followers[0],
-                    "lte": insta_followers[1]
+                    "gte": int(insta_followers[0]),
+                    "lte": int(insta_followers[1])
                     }
                 }
             }
@@ -602,45 +601,6 @@ class subAllAds(viewsets.ViewSet):
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
         return Response(r.response)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-# @subscription_required
-@ensure_csrf_cookie
-@method_decorator(subscription_required,name='list')
-def FilterView(request):
-    s = request.data.get('keywords')
-    str1=[]
-    for i in s:
-        str1.append("*"+i+"*")
-    
-    str1=" AND ".join(str1)
-    
-    query={
-        "query": {
-            "query_string": {
-            "fields": ["*"],
-            "query": str1
-            }
-        }
-    }
-
-    res=es.search(index=es_indice,body=query)
-    data=[]
-
-    if res["hits"]["hits"]:
-        for d in res["hits"]["hits"]:
-            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-            d["_source"]["id"]=d["_id"]
-            data.append(d["_source"])
-        r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
-        return Response(r.response)
-
-    r=rh.ResponseMsg(data={},error=False,msg="Success")
-    return Response(r.response, status=status.HTTP_200_OK)    
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
