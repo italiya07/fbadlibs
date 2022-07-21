@@ -177,8 +177,8 @@ def logoutview(request):
 
 # @method_decorator(subscription_required,name='create')
 class getAllAds(viewsets.ViewSet):
-    
-    @method_decorator(subscription_required)
+
+    # @method_decorator(subscription_required)
     def create(self,request):
         page_index=request.data.get("page_index")
         startdate=request.data.get("startdate")
