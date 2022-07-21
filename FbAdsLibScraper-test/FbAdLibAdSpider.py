@@ -218,13 +218,13 @@ class FbAdLibAdSpider:
         except Exception as e:
             print(f"Exception Occured While getting Ad Details :::: {fbAdlibItem['adID']}")
             print(e)
-            if driver:
-                driver.quit()
-            self.process_ad(fbAdlibItem)
+            # if driver:
+            #     driver.quit()
+            self.process_ad(driver,fbAdlibItem)
         finally:
             print(f"Got Ad Details SuccessFully  ::::  {fbAdlibItem['adID']}")
-            if driver:
-                driver.quit()
+            # if driver:
+            #     driver.quit()
             return fbAdlibItem
             
 
