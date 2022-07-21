@@ -175,7 +175,7 @@ def logoutview(request):
     }
     return response
 
-# @method_decorator(subscription_required,name='create')
+@method_decorator(subscription_required,name='create')
 class getAllAds(viewsets.ViewSet):
 
     # @method_decorator(subscription_required)
