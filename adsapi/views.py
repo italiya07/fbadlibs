@@ -194,7 +194,7 @@ class getAllAds(viewsets.ViewSet):
         user_obj=request.user
 
         query={
-            "from": page_index*8,
+            "from": int(page_index)*8,
             "size": 8,
             "query": {
                 "bool":{
