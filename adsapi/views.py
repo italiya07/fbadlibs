@@ -175,8 +175,10 @@ def logoutview(request):
     }
     return response
 
-@method_decorator(subscription_required,name='create')
+# @method_decorator(subscription_required,name='create')
 class getAllAds(viewsets.ViewSet):
+    
+    @method_decorator(subscription_required)
     def create(self,request):
         page_index=request.data.get("page_index")
         startdate=request.data.get("startdate")
@@ -189,8 +191,8 @@ class getAllAds(viewsets.ViewSet):
         ctaStatus=request.data.get("cta_status")
         s = request.data.get('keywords')
         p = request.data.get('phrase')
-
         user_obj=request.user
+
         query={
             "from": page_index*8,
             "size": 8,
