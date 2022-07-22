@@ -175,6 +175,180 @@ def logoutview(request):
     }
     return response
 
+
+@api_view(['POST'])
+@subscription_required
+def getAllSavedAds(request):
+        user=request.user
+        page_index=request.data.get("page_index")
+        startdate=request.data.get("startdate")
+        enddate=request.data.get("enddate")
+        adcount=request.data.get("adcount")
+        adstatus=request.data.get("adstatus")
+        fb_likes=request.data.get("fb_likes")
+        insta_followers=request.data.get("insta_followers")
+        media_type=request.data.get("media_type")
+        ctaStatus=request.data.get("cta_status")
+        s = request.data.get('keywords')
+        p = request.data.get('phrase')
+        sort_param=request.data.get('sort_by')
+        order_by=request.data.get('order_by')
+        increased=request.data.get('increaseCount')
+
+        ad_list=[]
+        if user:
+            obj=SaveAds.objects.filter(user__id=user.id)
+            serializer=SaveAdsSerializer(obj,many=True)
+            for i in serializer.data:
+                ad_list.append(i["ad"])
+
+        if ad_list:
+            query={
+            "from": int(page_index)*8,
+            "size": 8,
+            "query": {
+                    "bool": {
+                    "must": [
+                        {
+                        "terms": {
+                                "_id": ad_list
+                            }
+                        }
+                    ]
+                    }
+                }
+            }
+
+            if startdate and enddate :
+                date_query={
+                    "range": {
+                        "startDate": {
+                        "gte": startdate,
+                        "lte": enddate
+                        }
+                    }
+                }
+                query["query"]["bool"]["must"].append(date_query)
+
+            if adcount:
+                adcount_query={
+                    "range": {
+                    "noOfCopyAds": {
+                        "gte": int(adcount[0]),
+                        "lte": int(adcount[1])
+                        }
+                    }
+                }
+                query["query"]["bool"]["must"].append(adcount_query)
+
+            if adstatus:
+                status_query={
+                    "match": {
+                        "status.keyword": adstatus
+                    }
+                }
+                query["query"]["bool"]["must"].append(status_query)
+            
+            if fb_likes:
+                likes_query={
+                    "range": {
+                    "pageInfo.platforms.likes": {
+                        "gte": int(fb_likes[0]),
+                        "lte": int(fb_likes[1])
+                        }
+                    }
+                }
+                query["query"]["bool"]["must"].append(likes_query)
+            
+            if insta_followers:
+                followers_query={
+                    "range": {
+                        "pageInfo.platforms.followers": {
+                        "gte": int(insta_followers[0]),
+                        "lte": int(insta_followers[1])
+                        }
+                    }
+                }
+                query["query"]["bool"]["must"].append(followers_query)
+            
+            if media_type:
+                media_query={
+                    "match": {
+                        "adMediaType.keyword": media_type
+                    }
+                }
+                query["query"]["bool"]["must"].append(media_query)
+
+            if ctaStatus:
+                cta_query={
+                    "match": {
+                        "ctaStatus.keyword": ctaStatus
+                    }
+                }
+                query["query"]["bool"]["must"].append(cta_query)
+
+            if s:
+                str1=[]
+                for i in s:
+                    str1.append("*"+i+"*")
+                
+                str1=" AND ".join(str1)
+                
+                keyword_query={
+                    "query": {
+                        "query_string": {
+                        "fields": ["*"],
+                        "query": str1
+                        }
+                    }
+                }
+                query["query"]["bool"]["must"].append(keyword_query)
+
+            if p:
+                for i in p:
+                    phrase_query={
+                            "multi_match": {
+                                "query": i.strip(),
+                                "type": "phrase", 
+                                "fields": ["*"]
+                            }
+                    }
+                query["query"]["bool"]["must"].append(phrase_query)
+
+            if increased:
+                increament_query={
+                    "match": {
+                            "increaseCount": increased
+                        }
+                    }
+                query["query"]["bool"]["must"].append(increament_query)
+            
+            if sort_param and order_by:
+                sort_query={
+                    sort_param:{"order":order_by}
+                }
+                query["sort"].append(sort_query)
+        
+            res=es.search(index=es_indice,body=query)
+            data=[]
+
+            print(res)
+
+            if res["hits"]["hits"]:
+                for d in res["hits"]["hits"]:
+                    # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                    # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+                    # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+                    # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+                    d["_source"]["id"]=d["_id"]
+                    data.append(d["_source"])
+                
+                r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
+                return Response(r.response)
+
+        r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
+        return Response(r.response)
+
 @method_decorator(subscription_required,name='create')
 class getAllAds(viewsets.ViewSet):
     # @method_decorator(subscription_required)
@@ -190,6 +364,9 @@ class getAllAds(viewsets.ViewSet):
         ctaStatus=request.data.get("cta_status")
         s = request.data.get('keywords')
         p = request.data.get('phrase')
+        sort_param=request.data.get('sort_by')
+        order_by=request.data.get('order_by')
+        increased=request.data.get('increaseCount')
         user_obj=request.user
 
         query={
@@ -199,7 +376,8 @@ class getAllAds(viewsets.ViewSet):
                 "bool":{
                     "must":[]
                 }
-            }
+            },
+            "sort": []
         }
 
         if startdate and enddate :
@@ -257,7 +435,7 @@ class getAllAds(viewsets.ViewSet):
         if media_type:
             media_query={
                 "match": {
-                    "status.keyword": media_type
+                    "adMediaType.keyword": media_type
                 }
             }
             query["query"]["bool"]["must"].append(media_query)
@@ -265,7 +443,7 @@ class getAllAds(viewsets.ViewSet):
         if ctaStatus:
             cta_query={
                 "match": {
-                    "status.keyword": ctaStatus
+                    "ctaStatus.keyword": ctaStatus
                 }
             }
             query["query"]["bool"]["must"].append(cta_query)
@@ -297,13 +475,29 @@ class getAllAds(viewsets.ViewSet):
                         }
                 }
             query["query"]["bool"]["must"].append(phrase_query)
+
+        if increased:
+            increament_query={
+                "match": {
+                        "increaseCount": increased
+                    }
+                }
+            query["query"]["bool"]["must"].append(increament_query)
         
+        if sort_param and order_by:
+            sort_query={
+                sort_param:{"order":order_by}
+            }
+            query["sort"].append(sort_query)
+       
+        
+
         ad_ids=[]
         saved_ad_obj=SaveAds.objects.filter(user__id=user_obj.id).all()
         serializer=SaveAdsSerializer(saved_ad_obj,many=True)
         for i in serializer.data:
             ad_ids.append(i["ad"])
-
+        
         res=es.search(index=es_indice,body=query)
         data=[]
         final_data=[]
@@ -435,23 +629,9 @@ def Change_password(request,token):
         'form': form
     })    
 
-@method_decorator(subscription_required,name='list')
+
 class ManageSaveAds(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
-    # permission_classes=[AllowAny]
-    # def create(self,request):
-    #     data=request.data
-    #     user=request.user
-    #     print(user)
-    #     serializer=SaveAdsSerializer(data=data)
-    #     print("seri......", serializer)
-    #     if serializer.is_valid():
-    #         print("seri......valid..", serializer.validated_data)
-    #         serializer.save(user=user)
-    #         r=rh.ResponseMsg(data=serializer.data,error=False,msg="Ad Saved")
-    #         return Response(r.response)
-    #     r=rh.ResponseMsg(data={},error=True,msg="Ad not saved")
-    #     return Response(r.response)
     
     # @method_decorator(subscription_required)
     def create(self,request):
@@ -513,46 +693,178 @@ class ManageSaveAds(viewsets.ViewSet):
         r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
         return Response(r.response)
     
+    # @method_decorator(subscription_required)
     # def list(self,request,pk=None):
     #     user=request.user
+    #     page_index=request.data.get("page_index")
+    #     startdate=request.data.get("startdate")
+    #     enddate=request.data.get("enddate")
+    #     adcount=request.data.get("adcount")
+    #     adstatus=request.data.get("adstatus")
+    #     fb_likes=request.data.get("fb_likes")
+    #     insta_followers=request.data.get("insta_followers")
+    #     media_type=request.data.get("media_type")
+    #     ctaStatus=request.data.get("cta_status")
+    #     s = request.data.get('keywords')
+    #     p = request.data.get('phrase')
+    #     sort_param=request.data.get('sort_by')
+    #     order_by=request.data.get('order_by')
+    #     increased=request.data.get('increaseCount')
+
+    #     add=[]
+    #     ad_list=[]
     #     if user:
     #         obj=SaveAds.objects.filter(user__id=user.id)
     #         serializer=SaveAdsSerializer(obj,many=True)
-    #         r=rh.ResponseMsg(data=serializer.data,error=False,msg="All saved ads for this user")
+    #         for i in serializer.data:
+    #             ad_list.append(i["ad"])
+        
+    #     query={
+    #         "from": int(page_index)*8,
+    #         "size": 8,
+    #         "query": {
+    #                 "bool": {
+    #                 "must": [
+    #                     {
+    #                     "terms":{
+    #                             "_id": ad_list
+    #                         }
+    #                     }
+    #                 ]
+    #             }
+    #         },
+    #         "sort": []
+    #     }
+
+    #     if startdate and enddate :
+    #         date_query={
+    #             "range": {
+    #                 "startDate": {
+    #                 "gte": startdate,
+    #                 "lte": enddate
+    #                 }
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(date_query)
+
+    #     if adcount:
+    #         adcount_query={
+    #             "range": {
+    #             "noOfCopyAds": {
+    #                 "gte": int(adcount[0]),
+    #                 "lte": int(adcount[1])
+    #                 }
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(adcount_query)
+
+    #     if adstatus:
+    #         status_query={
+    #             "match": {
+    #                 "status.keyword": adstatus
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(status_query)
+        
+    #     if fb_likes:
+    #         likes_query={
+    #             "range": {
+    #             "pageInfo.platforms.likes": {
+    #                 "gte": int(fb_likes[0]),
+    #                 "lte": int(fb_likes[1])
+    #                 }
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(likes_query)
+        
+    #     if insta_followers:
+    #         followers_query={
+    #             "range": {
+    #                 "pageInfo.platforms.followers": {
+    #                 "gte": int(insta_followers[0]),
+    #                 "lte": int(insta_followers[1])
+    #                 }
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(followers_query)
+        
+    #     if media_type:
+    #         media_query={
+    #             "match": {
+    #                 "adMediaType.keyword": media_type
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(media_query)
+
+    #     if ctaStatus:
+    #         cta_query={
+    #             "match": {
+    #                 "ctaStatus.keyword": ctaStatus
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(cta_query)
+
+    #     if s:
+    #         str1=[]
+    #         for i in s:
+    #             str1.append("*"+i+"*")
+            
+    #         str1=" AND ".join(str1)
+            
+    #         keyword_query={
+    #             "query": {
+    #                 "query_string": {
+    #                 "fields": ["*"],
+    #                 "query": str1
+    #                 }
+    #             }
+    #         }
+    #         query["query"]["bool"]["must"].append(keyword_query)
+
+    #     if p:
+    #         for i in p:
+    #             phrase_query={
+    #                     "multi_match": {
+    #                         "query": i.strip(),
+    #                         "type": "phrase", 
+    #                         "fields": ["*"]
+    #                     }
+    #             }
+    #         query["query"]["bool"]["must"].append(phrase_query)
+
+    #     if increased:
+    #         increament_query={
+    #             "match": {
+    #                     "increaseCount": increased
+    #                 }
+    #             }
+    #         query["query"]["bool"]["must"].append(increament_query)
+        
+    #     if sort_param and order_by:
+    #         sort_query={
+    #             sort_param:{"order":order_by}
+    #         }
+    #         query["sort"].append(sort_query)
+       
+    #     ad_ids=[]
+    #     res=es.search(index=es_indice,body=query)
+    #     data=[]
+    #     final_data=[]
+    #     if res["hits"]["hits"]:
+    #         for d in res["hits"]["hits"]:
+    #             # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+    #             # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+    #             # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+    #             # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+    #             d["_source"]["id"]=d["_id"]
+    #             data.append(d["_source"])
+    #         final_data.append({"saved_ads":ad_ids})
+    #         final_data.append({"all_ads": data})
+    #         r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
     #         return Response(r.response)
-    #     r=rh.ResponseMsg(data={},error=False,msg="Data not found")
+
+    #     r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
     #     return Response(r.response)
-    
-    # @method_decorator(subscription_required)
-    def list(self,request,pk=None):
-        user=request.user
-        add=[]
-        if user:
-            obj=SaveAds.objects.filter(user__id=user.id)
-            serializer=SaveAdsSerializer(obj,many=True)
-            for i in serializer.data:
-                query={
-                            "size": 10000,
-                            "query": {
-                                "match": {
-                                    "_id" : i["ad"]
-                                }
-                            }
-                        }
-                res=es.search(index=es_indice,body=query) 
-                if res["hits"]["hits"]:
-                    for d in res["hits"]["hits"]:
-                        # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                        # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-                        # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-                        # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-                        # kidfoflnm
-                        d["_source"]["id"]=i["ad"]
-                        add.append(d["_source"])
-            r=rh.ResponseMsg(data=add,error=False,msg="All saved ads for this user")
-            return Response(r.response)
-        r=rh.ResponseMsg(data={},error=False,msg="Data not found")
-        return Response(r.response)
 
 
 class contactSupport(viewsets.ViewSet):
