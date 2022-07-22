@@ -29,12 +29,13 @@ class FbAdsLibScraper:
         cleanedFbAdlibItem = self.startDataCleaner(fbAdlibItem)
         storedFbAdlibItem  = self.startDataStore(cleanedFbAdlibItem)
 
-        print(f"Data is successfully stored for Ad : {storedFbAdlibItem['adID']}")
+        # print(f"Data is successfully stored for Ad : {storedFbAdlibItem['adID']}")
 
     def startDomainScraper(self, combinedProxyDomain):
 
         fbAdLibDomainSpider = FbAdLibDomainSpider(combinedProxyDomain["activeProxies"])
         try:
+            print(f"Domain Started -: {combinedProxyDomain['domain']}")
             fbAdLibItemList = fbAdLibDomainSpider.process_domain(combinedProxyDomain["domain"])
 
             # combinedProxyAdList = []
@@ -44,15 +45,19 @@ class FbAdsLibScraper:
             #     adProxies["fbAdlibItem"] = fbAdLibItem
             #     combinedProxyAdList.append(adProxies)
 
-            # print(f"Got All the Ads for : {combinedProxyDomain['domain']}")
+            # # print(f"Got All the Ads for : {combinedProxyDomain['domain']}")
 
             # result = []
             # with ThreadPoolExecutor(max_workers=30) as exe:
             #     result = exe.map(self.startAdScraper,combinedProxyAdList)
 
         except Exception as ex:
-            print(f'fn.startDomainScraper Exception Occured !!!')
-            print(ex)
+            print(f"Domain has Exception  -: {combinedProxyDomain['domain']}")
+            pass
+            # print(f'fn.startDomainScraper Exception Occured !!!')
+            # print(ex)
+        # finally:
+        #     print(f"Domain Completed Successfully -: {combinedProxyDomain['domain']}")
         
     def startScraper(self):
 
@@ -64,12 +69,13 @@ class FbAdsLibScraper:
                 domainProxies["domain"]       = domain
                 combinedProxyDomainList.append(domainProxies)
 
-            with ThreadPoolExecutor(max_workers=100) as exe:
+            with ThreadPoolExecutor(max_workers=50) as exe:
                 result = exe.map(self.startDomainScraper,combinedProxyDomainList)
 
         except Exception as ex:
-            print("Fn.startScraper Exception Occured !!!")
-            print(ex)
+            pass
+            # print("Fn.startScraper Exception Occured !!!")
+            # print(ex)
 
 
         

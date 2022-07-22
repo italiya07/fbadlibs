@@ -61,11 +61,11 @@ class FbAdLibDomainSpider:
             if attempts == self.maxPollingCount:
                 break
             else:
-                print("Started attempts :- " + str(attempts))
+                # print("Started attempts :- " + str(attempts))
                 try:
                     options  = self.get_chrome_driver_options()
                     driver = webdriver.Chrome("/opt/chromedriver",options=options)
-                    driver.get(domain)
+                    driver.get(f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q={domain}")
                     try:
                         element = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//*[text()='0 results']")))
                         print(f"Got 0 ads for domain: {domain}")
@@ -73,20 +73,20 @@ class FbAdLibDomainSpider:
                     except:
                         try:
                             element = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CLASS_NAME, "_99s5")))
-                            print(f"Working { self.proxyToBeUsed }!!!!")
+                            print(f"Working Proxy for {domain} is :- { self.proxyToBeUsed }!!!!")
                             workingDriver = driver
                             break
                         except Exception as ex:
                             if driver:
                                 driver.quit()
-                            print(f"Not Working { self.proxyToBeUsed }!!!!")
-                            print(ex)
+                            print(f"Working Proxy for {domain} is :- { self.proxyToBeUsed }!!!!")
+                            # # print(ex)
                             continue
                 except Exception as ex:
                     if driver:
                         driver.quit()
-                    print(f"Not Working { self.proxyToBeUsed }!!!!")
-                    print(ex)
+                    # print(f"Not Working { self.proxyToBeUsed }!!!!")
+                    # # print(ex)
                     continue
         return workingDriver            
             
@@ -108,13 +108,13 @@ class FbAdLibDomainSpider:
         cleanedFbAdlibItem = self.startDataCleaner(fbAdlibItem)
         storedFbAdlibItem  = self.startDataStore(cleanedFbAdlibItem)
 
-        print(f"Data is successfully stored for Ad : {storedFbAdlibItem['adID']}")
+        # print(f"Data is successfully stored for Ad : {storedFbAdlibItem['adID']}")
     def process_domain(self, domain):
-        print("Domain to be scraped :- " + domain)
+        # print("Domain to be scraped :- " + domain)
         fbAdLibItemList = []
         driver = None
         try:
-            driver = self.polling_for_driver(f"https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q={domain}")
+            driver = self.polling_for_driver(domain)
             for ads in driver.find_elements(by=By.CLASS_NAME, value="_99s5"):
 
                 fbAdlibItem = {
@@ -131,14 +131,16 @@ class FbAdLibDomainSpider:
                         try:
                             fbAdlibItem["status"] = details.find_element(by=By.CLASS_NAME, value='nxqif72j').text
                         except Exception as e:
-                            print("Exception at while status :")
-                            #print(e)
+                            pass
+                            # print("Exception at while status :")
+                            ## print(e)
                     if idx == 1: 
                         try:
                             fbAdlibItem["startDate"] = details.find_element(by=By.TAG_NAME, value='span').text
                         except Exception as e:
-                            print("Exception at while startDate :")
-                            #print(e)
+                            pass
+                            # print("Exception at while startDate :")
+                            ## print(e)
                     if idx == 2:
                         platformList = []
                         try:
@@ -146,53 +148,58 @@ class FbAdLibDomainSpider:
                                 platform_style = platform.get_attribute("style")
                                 if platform_style.__contains__('0px'):
                                     platformList.append("Facebook")
-                                    # print("Facebook")
+                                    # # print("Facebook")
                                 if platform_style.__contains__('-19px'):
                                     platformList.append("Instagram")
-                                    # print("Instagram")
+                                    # # print("Instagram")
                                 if platform_style.__contains__('-17px -66px'):
                                     platformList.append("Audience Network")
-                                    # print("Audience Network")
+                                    # # print("Audience Network")
                                 if platform_style.__contains__('-17px -79px'):
                                     platformList.append("Messenger")
-                                    # print("Messenger")
+                                    # # print("Messenger")
                             fbAdlibItem["platforms"] = platformList
                         except Exception as e:
                             fbAdlibItem["platforms"] = platformList
-                            #print(e)
+                            ## print(e)
                     if idx > 2:
                         text = details.find_element(by=By.TAG_NAME, value='span').text
                         if text.__contains__('ID'):
                             try:
                                 fbAdlibItem["adID"] = details.find_element(by=By.TAG_NAME, value='span').text.split(':')[1].strip()
                             except Exception as e:
-                                print("Exception at while adID :")
-                                #print(e)
+                                pass
+                                # print("Exception at while adID :")
+                                ## print(e)
 
                 try:
                     text = ads.find_element(by=By.CLASS_NAME, value='hv94jbsx').find_element(by=By.CLASS_NAME, value='_9b9y')
                     if text:
                         fbAdlibItem["noOfCopyAds"] = text.find_element(by=By.TAG_NAME, value='strong').text
                 except Exception as e:
-                    print("Exception at noOfCopyAds :--")
-                    #print(e)
+                    pass
+                    # print("Exception at noOfCopyAds :--")
+                    ## print(e)
 
                 try:
                     ads.find_element(by=By.XPATH, value="// *[contains(text(),'we cannot show you this ad')]")
-                    print("we cannot show you this ad")
+                    # print("we cannot show you this ad")
                 except:
                     fbAdLibItemList.append(fbAdlibItem)
 
-            for item in fbAdLibItemList:
+            print(f"Got {len(fbAdLibItemList)} no of ads for domain {domain}")
+            for item in fbAdLibItemList[:2]:
                 self.startAdScraper(driver, item)
 
+            print(f"Domain scraped successfully :- {domain}")
+
         except Exception as e:
-            print(f"Exception Occured While getting list of ads from domain :::: {domain}")
-            print(e)
+            # print(f"Exception Occured While getting list of ads from domain :::: {domain}")
+            # # print(e)
             if driver:
                 driver.quit()
         finally:
-            print(f"Got List Of Ads for a Domain  ::::  {domain}")
+            # print(f"Got List Of Ads for a Domain  ::::  {domain}")
             if driver:
                 driver.quit()
             return fbAdLibItemList

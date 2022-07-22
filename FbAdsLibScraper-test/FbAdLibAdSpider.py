@@ -63,25 +63,26 @@ class FbAdLibAdSpider:
     #         if attempts == self.maxPollingCount:
     #             break
     #         else:
-    #             print("Started attempts :- " + str(attempts))
+    #             # print("Started attempts :- " + str(attempts))
     #             try:
     #                 options  = self.get_chrome_driver_options()
     #                 driver = webdriver.Chrome("/opt/chromedriver",options=options)
     #                 adUrl = f"https://www.facebook.com/ads/library/?id={adID}"
     #                 driver.get(adUrl)
     #                 element = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.XPATH, "//div [contains( text(), 'See ad details')]")))
-    #                 print(f"Working { self.proxyToBeUsed }!!!!")
+    #                 # print(f"Working { self.proxyToBeUsed }!!!!")
     #                 workingDriver = driver
     #                 break
     #             except Exception as ex:
     #                 if driver:
     #                     driver.quit()
-    #                 print(f"Not Working { self.proxyToBeUsed }!!!!")
-    #                 print(ex)
+    #                 # print(f"Not Working { self.proxyToBeUsed }!!!!")
+    #                 # print(ex)
     #                 continue
     #     return workingDriver
 
     def process_ad(self,driver, fbAdlibItem):
+        print(f"Ad Started -->  ::::  {fbAdlibItem['adID']}")
         fbAdlibItem["adMediaURL"] = ""
         fbAdlibItem["adMediaThumbnail"] = ""
         fbAdlibItem["adMediaType"] = ""
@@ -113,8 +114,9 @@ class FbAdLibAdSpider:
                     fbAdlibItem["adMediaType"] = 'image'
                     break
                 except Exception as e:
-                    print("Exception while adMediaURL Image")
-                    #print(e)
+                    pass
+                    # print("Exception while adMediaURL Image")
+                    ## print(e)
 
             if fbAdlibItem["adMediaURL"] == "":
                 try:
@@ -122,22 +124,25 @@ class FbAdLibAdSpider:
                     fbAdlibItem["adMediaThumbnail"] = driver.find_element(by=By.CLASS_NAME, value='effa2scm > .qi2u98y8').find_element(by=By.TAG_NAME, value='video').get_attribute('poster')
                     fbAdlibItem["adMediaType"] = "video"
                 except Exception as e:
-                    print("Exception while adMediaURL Video")
-                    #print(e)
+                    pass
+                    # print("Exception while adMediaURL Video")
+                    ## print(e)
 
             
             try:
                 fbAdlibItem["adDescription"] = driver.find_element(by=By.CLASS_NAME, value="qi2u98y8.n6ukeyzl").find_element(by=By.CLASS_NAME, value='n54jr4lg ._4ik5').text
             except Exception as e:
-                print("Exception while adDescription")
-                #print(e)
+                pass
+                # print("Exception while adDescription")
+                ## print(e)
 
             
             try:
                 fbAdlibItem["ctaStatus"] = driver.find_element(by=By.CLASS_NAME, value="_8jg_").find_element(by=By.CLASS_NAME, value="duy2mlcu").text
             except Exception as e:
-                print("Exception while ctaStatus")
-                #print(e)
+                pass
+                # print("Exception while ctaStatus")
+                ## print(e)
 
 
             try:
@@ -149,80 +154,90 @@ class FbAdLibAdSpider:
                     if idx == 2:
                         fbAdlibItem["purchaseDescription"] = info.text
             except Exception as e:
-                print("Exception while Ads Headline")
-                #print(e)
+                pass
+                # print("Exception while Ads Headline")
+                ## print(e)
 
         
             try:
                 fbAdlibItem["purchaseURL"] = driver.find_element(by=By.CLASS_NAME, value='qi2u98y8.n6ukeyzl').find_elements(by=By.TAG_NAME, value='a')[2].get_attribute('href')
             except Exception as e:
-                print("Exception while Ads purchaseURL")
-                #print(e)
+                pass
+                # print("Exception while Ads purchaseURL")
+                ## print(e)
 
             ##### Scrape Page Info
             
             try:
                 pageInfo["name"] = driver.find_element(by=By.CLASS_NAME, value="jbmj41m4").find_element(by=By.TAG_NAME, value='a').text
             except Exception as e:
-                print("Exception while pageInfo name")
-                #print(e)
+                pass
+                # print("Exception while pageInfo name")
+                ## print(e)
             
             try:
                 pageInfo["url"] = driver.find_element(by=By.CLASS_NAME, value="jbmj41m4").find_element(by=By.TAG_NAME, value='a').get_attribute('href')
             except Exception as e:
-                print("Exception while pageInfo url")
-                #print(e)
+                pass
+                # print("Exception while pageInfo url")
+                ## print(e)
             
             try:
                 pageInfo["logo"] = driver.find_element(by=By.CLASS_NAME, value="jbmj41m4").find_element(by=By.TAG_NAME, value='img').get_attribute('src')
             except Exception as e:
-                print("Exception while pageInfo logo")
-                #print(e)
+                pass
+                # print("Exception while pageInfo logo")
+                ## print(e)
 
-            for platforms in driver.find_element(by=By.CLASS_NAME, value="jbmj41m4").find_elements(by=By.CLASS_NAME, value="hck7fp40"):
-                platform = {
-                    "name":"",
-                    "likes":0,
-                    "followers":0,
-                    "other":"",
-                    "type":""
-                }
-                if platforms.text.__contains__('likes'):
-                    platform["name"] = "Facebook"
-                    for info in platforms.find_elements(by=By.CLASS_NAME, value="i0ppjblf"):
-                        if info.text.__contains__('likes'):
-                            platform["likes"] = int(info.text.split(' ')[0].replace(',', ''))
-                            if info.text.__contains__('•'):
-                                platform["type"] = info.text.split('•')[1].strip()
-                        else:
-                            platform["other"] = info.text
+            try:
+                for platforms in driver.find_element(by=By.CLASS_NAME, value="jbmj41m4").find_elements(by=By.CLASS_NAME, value="hck7fp40"):
+                    platform = {
+                        "name":"",
+                        "likes":0,
+                        "followers":0,
+                        "other":"",
+                        "type":""
+                    }
+                    if platforms.text.__contains__('likes'):
+                        platform["name"] = "Facebook"
+                        for info in platforms.find_elements(by=By.CLASS_NAME, value="i0ppjblf"):
+                            if info.text.__contains__('likes'):
+                                platform["likes"] = int(info.text.split(' ')[0].replace(',', ''))
+                                if info.text.__contains__('•'):
+                                    platform["type"] = info.text.split('•')[1].strip()
+                            else:
+                                platform["other"] = info.text
 
-                elif platforms.text.__contains__('followers'):
-                    platform["name"] = "Instagram"
-                    for info in platforms.find_elements(by=By.CLASS_NAME, value="i0ppjblf"):
-                        if info.text.__contains__('followers'):
-                            platform["followers"] = int(info.text.split(' ')[0].replace(',', ''))
-                        else:
-                            platform["other"] = info.text
+                    elif platforms.text.__contains__('followers'):
+                        platform["name"] = "Instagram"
+                        for info in platforms.find_elements(by=By.CLASS_NAME, value="i0ppjblf"):
+                            if info.text.__contains__('followers'):
+                                platform["followers"] = int(info.text.split(' ')[0].replace(',', ''))
+                            else:
+                                platform["other"] = info.text
 
-                pageInfo["platforms"].append(platform)
-                    
-            fbAdlibItem["pageInfo"] = pageInfo
+                    pageInfo["platforms"].append(platform)
+                        
+                fbAdlibItem["pageInfo"] = pageInfo
+            except Exception as ex:
+                pass
+                # print(f"Exception while getting Platforms for ad :- {fbAdlibItem['adID']}")
             # try:
             #     line = json.dumps(fbAdlibItem.__dict__) + ","
-            #     print(line)
+            #     # print(line)
             #     self.file.write(line)
             # except Exception as e:
-            #     print("Error while saving data to file :")
-            #     #print(e)
+            #     # print("Error while saving data to file :")
+            #     ## print(e)
         except Exception as e:
-            print(f"Exception Occured While getting Ad Details :::: {fbAdlibItem['adID']}")
-            print(e)
+            # print(f"Exception Occured While getting Ad Details :::: {fbAdlibItem['adID']}")
+            pass
+            # # print(e)
             # if driver:
             #     driver.quit()
-            self.process_ad(driver,fbAdlibItem)
+            # self.process_ad(driver,fbAdlibItem)
         finally:
-            print(f"Got Ad Details SuccessFully  ::::  {fbAdlibItem['adID']}")
+            print(f"Ad Scrapped Successfully -->  ::::  {fbAdlibItem['adID']}")
             # if driver:
             #     driver.quit()
             return fbAdlibItem

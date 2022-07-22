@@ -48,16 +48,16 @@ class FbAdLibAdDataCleaner:
                 parsed_url = urlparse(adDataToBeCleaned["purchaseURL"])
                 adDataToBeCleaned["purchaseURL"] = parse_qs(parsed_url.query)["u"][0]
             except Exception as ex:
-                print(f"Exception purchaseURL :-- {adDataToBeCleaned['purchaseURL']}")
-                print(ex)
+                # print(f"Exception purchaseURL :-- {adDataToBeCleaned['purchaseURL']}")
+                # print(ex)
+                pass
 
             adDataToBeCleaned["pageInfo"]["name"]=adDataToBeCleaned["pageInfo"]["name"].strip()
             adDataToBeCleaned["pageInfo"]["url"]=adDataToBeCleaned["pageInfo"]["url"].strip()
             adDataToBeCleaned["pageInfo"]["logo"]=adDataToBeCleaned["pageInfo"]["logo"].strip()
-
-            print(f"SuccessFull Data Cleaning For Ad :---{adDataToBeCleaned['adID']}")
         except Exception as ex:
-            print(f"Exception Occured at Data Cleaning For Ad :---{adDataToBeCleaned['adID']}")
-            print(ex)
+            pass
+            # print(f"Exception Occured at Data Cleaning For Ad :---{adDataToBeCleaned['adID']}")
+            # print(ex)
 
         return adDataToBeCleaned

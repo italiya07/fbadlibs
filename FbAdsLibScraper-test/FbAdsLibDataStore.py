@@ -43,7 +43,7 @@ class FbAdsLibDataStore:
         try:
             self.client.indices.create(index)
         except Exception as ex:
-            print(ex)
+            # print(ex)
             if ex.error == 'resource_already_exists_exception':
                 pass # Index already exists. Ignore.
             else: # Other exception - raise it
@@ -118,17 +118,18 @@ class FbAdsLibDataStore:
             fbAdlibItem['pageInfo']['bucketLogoURL'] = f'https://{self.bucket_name}.s3.amazonaws.com/pages/{pageName}.jpeg'
         
         yesterday = today - timedelta(days = 1)
-        fbAdlibItem['history'] = [{"date": (yesterday - datetime.timedelta(days=x)).strftime('%d/%m'), "noOfCopyAds": None} for x in range(29)]
+        fbAdlibItem['history'] = [{"date": (yesterday - datetime.timedelta(days=x)).strftime('%m/%d'), "noOfCopyAds": None} for x in range(29)]
         fbAdlibItem['history'].reverse()
-        fbAdlibItem['history'].append({"date": today.strftime('%d/%m'), "noOfCopyAds": fbAdlibItem['noOfCopyAds']})
+        fbAdlibItem['history'].append({"date": today.strftime('%m/%d'), "noOfCopyAds": fbAdlibItem['noOfCopyAds']})
         try:
             fbAdlibItem['lastUpdatedTime'] = int(time.time() * 1000)
             fbAdlibItem['lastUpdatedDate'] = today.strftime("%d/%m/%Y")
             res=self.client.index(index=self.index_name, body=fbAdlibItem, refresh = True)
-            print("Record created successfully !!!!!")
+            # print("Record created successfully !!!!!")
         except Exception as e:
-            print("Exception Occured while creating an Ad to Elastic Search :")
-            print(e)
+            pass
+            # print("Exception Occured while creating an Ad to Elastic Search :")
+            # print(e)
         finally:
             return
 
@@ -141,7 +142,7 @@ class FbAdsLibDataStore:
             oldFbAdlibItem["_source"]['history'][-1]['noOfCopyAds'] = noOfCopyAds
         else:
             oldFbAdlibItem["_source"]['history'].append({
-                            "date":today.strftime("%d/%m"),
+                            "date":today.strftime("%m/%d"),
                             "noOfCopyAds": noOfCopyAds
                             })
 
@@ -166,10 +167,11 @@ class FbAdsLibDataStore:
 
         try:
             query_res=self.client.update_by_query(index=self.index_name,body=query1, refresh = True)
-            print("Record updated successfully !!!!!")
+            # print("Record updated successfully !!!!!")
         except Exception as e:
-            print("Exception Occured while updating an Ad to Elastic Search :")
-            print(e)
+            pass
+            # print("Exception Occured while updating an Ad to Elastic Search :")
+            # print(e)
         finally:
             return
 
@@ -178,7 +180,7 @@ class FbAdsLibDataStore:
             today = self.get_today()
             newFbAdlibItem["hash"]=self.generate_hash(newFbAdlibItem)
             
-            print(f"Generated Hash :- {newFbAdlibItem['hash']}")
+            # print(f"Generated Hash :- {newFbAdlibItem['hash']}")
 
             query={
             "query": {
@@ -196,7 +198,7 @@ class FbAdsLibDataStore:
 
             result=self.client.search(index=self.index_name, body=query)
             
-#             print(f"Got the Match :- {result['hits']['hits']}")
+#             # print(f"Got the Match :- {result['hits']['hits']}")
             
             if len(result['hits']['hits']) > 0:
                 """Hash Matched go for media url match"""
@@ -204,28 +206,29 @@ class FbAdsLibDataStore:
                     if newFbAdlibItem['status'] == "Active":
                         if storedAdData["_source"]["status"] == 'Active':
                             """Just Update No. Of ads and finish !!"""
-                            print('new --> active & old --> active |||| Just Update No. Of ads and finish !!')
+                            # print('new --> active & old --> active |||| Just Update No. Of ads and finish !!')
                             self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'])
                         elif storedAdData["_source"]["status"] == 'Inactive':
                             """Make it Active and update ad count!!"""
-                            print('new --> active & old --> Inactive |||| Make old Active and update ad count!!')
+                            # print('new --> active & old --> Inactive |||| Make old Active and update ad count!!')
                             self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'], 'Active')
 
                     elif newFbAdlibItem['status'] == "Inactive":
                         if storedAdData["_source"]["status"] == 'Active':
                             """Just Update No. Of ads and finish !!"""
-                            print('new --> Inactive & old --> active |||| Make old Inactive and update ad count!!')
+                            # print('new --> Inactive & old --> active |||| Make old Inactive and update ad count!!')
                             self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'], 'Inactive')
                         elif storedAdData["_source"]["status"] == 'Inactive':
                             """Make it Active and update ad count!!"""
-                            print('new --> Inactive & old --> Inactive |||| Just Update No. Of ads and finish !!')
+                            # print('new --> Inactive & old --> Inactive |||| Just Update No. Of ads and finish !!')
                             self.update_ad(storedAdData, newFbAdlibItem['noOfCopyAds'])  
             else:
                 self.create_new_ad(newFbAdlibItem)
 
-            print(f"SuccessFull Data Stored for Ad :- {newFbAdlibItem['adID']}")
+            # print(f"SuccessFull Data Stored for Ad :- {newFbAdlibItem['adID']}")
         except Exception as ex:
-            print("Exception Occured while saving ad")
-            print(ex)
+            pass
+            # print("Exception Occured while saving ad")
+            # print(ex)
 
         return newFbAdlibItem
