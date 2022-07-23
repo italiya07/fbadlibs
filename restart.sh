@@ -1,5 +1,5 @@
 #!/bin/bash
-
+cd /home/ec2-user/fbadsfinal
 source Fbadslib-env/bin/activate
 pip3 install -r requirements.txt
 
