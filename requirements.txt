@@ -31,17 +31,17 @@ elastic-transport==8.1.2
 elasticsearch==7.10.0
 filelock
 future
-# google-api-core
-# google-auth==2.8.0
-# google-cloud-core
-# google-cloud-secret-manager
-# google-cloud-storage
-# google-crc32c
-# google-resumable-media
-# googleapis-common-protos
-# grpc-google-iam-v1
-# grpcio
-# grpcio-status
+google-api-core
+google-auth==2.8.0
+google-cloud-core
+google-cloud-secret-manager
+google-cloud-storage
+google-crc32c
+google-resumable-media
+googleapis-common-protos
+grpc-google-iam-v1
+grpcio
+grpcio-status
 gunicorn
 h11
 hyperlink
@@ -108,3 +108,4 @@ wcwidth
 webdriver-manager
 wsproto
 zope.interface
+#
