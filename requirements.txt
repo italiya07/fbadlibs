@@ -32,7 +32,7 @@ elasticsearch==7.10.0
 filelock
 future
 google-api-core
-# google-auth==2.8.0
+google-auth==2.8.0
 google-cloud-core
 google-cloud-secret-manager
 google-cloud-storage
@@ -62,8 +62,8 @@ platformdirs
 Protego
 proto-plus
 protobuf
-# psycopg2==2.9.3
-# psycopg2-binary==2.9.3
+# psycopg2
+psycopg2-binary
 pyasn1
 pyasn1-modules
 pycparser
@@ -108,3 +108,4 @@ wcwidth
 webdriver-manager
 wsproto
 zope.interface
+#
