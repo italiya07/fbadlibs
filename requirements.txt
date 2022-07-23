@@ -62,8 +62,8 @@ platformdirs
 Protego
 proto-plus
 protobuf
-psycopg2==2.9.3
-psycopg2-binary==2.9.3
+# psycopg2==2.9.3
+# psycopg2-binary==2.9.3
 pyasn1
 pyasn1-modules
 pycparser
