@@ -295,13 +295,12 @@ def getAllSavedAds(request):
                 str1=" AND ".join(str1)
                 
                 keyword_query={
-                    "query": {
                         "query_string": {
                         "fields": ["*"],
                         "query": str1
                         }
                     }
-                }
+                
                 query["query"]["bool"]["must"].append(keyword_query)
 
             if p:
@@ -456,12 +455,10 @@ class getAllAds(viewsets.ViewSet):
             str1=" AND ".join(str1)
             
             keyword_query={
-                "query": {
                     "query_string": {
                     "fields": ["*"],
                     "query": str1
                     }
-                }
             }
             query["query"]["bool"]["must"].append(keyword_query)
 
