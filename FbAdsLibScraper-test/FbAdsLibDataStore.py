@@ -117,9 +117,9 @@ class FbAdsLibDataStore:
             self.s3.upload_fileobj(mediaResponse, self.bucket_name, f'pages/{pageName}.jpeg')
             fbAdlibItem['pageInfo']['bucketLogoURL'] = f'https://{self.bucket_name}.s3.amazonaws.com/pages/{pageName}.jpeg'
         
-        yesterday = today - timedelta(days = 1)
-        fbAdlibItem['history'] = [{"date": (yesterday - datetime.timedelta(days=x)).strftime('%m/%d'), "noOfCopyAds": None} for x in range(29)]
-        fbAdlibItem['history'].reverse()
+        # yesterday = today - timedelta(days = 1)
+        # fbAdlibItem['history'] = [{"date": (yesterday - datetime.timedelta(days=x)).strftime('%m/%d'), "noOfCopyAds": None} for x in range(29)]
+        # fbAdlibItem['history'].reverse()
         fbAdlibItem['history'].append({"date": today.strftime('%m/%d'), "noOfCopyAds": fbAdlibItem['noOfCopyAds']})
         try:
             fbAdlibItem['lastUpdatedTime'] = int(time.time() * 1000)
