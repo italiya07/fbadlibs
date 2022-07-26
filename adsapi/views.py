@@ -1131,20 +1131,20 @@ def fetch_payment_method(request):
         return Response(r.response, status=status.HTTP_200_OK)
     r=rh.ResponseMsg(data={"status":"Inactive"},error=False,msg="No subscription is active")
     return Response(r.response, status=status.HTTP_200_OK)
-@api_view(['GET'])
-# @subscription_required
-@permission_classes([IsAuthenticated])
-def check_sub_status(request):
-    stripe.api_key = API_KEY
-    sub_obj=Subscription_details.objects.filter(user=request.user).first()
-    sub_status=stripe.Subscription.retrieve(
-        sub_obj.subscription_id,
-    )
-    print(sub_status)
-    end_date=sub_status.current_period_end
-    plan_type=sub_status.plan.nickname
-    r=rh.ResponseMsg(data={"status":sub_status.status,"end_date":datetime.utcfromtimestamp(end_date).strftime('%b %d, %Y'),"plan_type":plan_type},error=False,msg="Subscription status !!!!")
-    return Response(r.response, status=status.HTTP_200_OK)
+# @api_view(['GET'])
+# # @subscription_required
+# @permission_classes([IsAuthenticated])
+# def check_sub_status(request):
+#     stripe.api_key = API_KEY
+#     sub_obj=Subscription_details.objects.filter(user=request.user).first()
+#     sub_status=stripe.Subscription.retrieve(
+#         sub_obj.subscription_id,
+#     )
+#     print(sub_status)
+#     end_date=sub_status.current_period_end
+#     plan_type=sub_status.plan.nickname
+#     r=rh.ResponseMsg(data={"status":sub_status.status,"end_date":datetime.utcfromtimestamp(end_date).strftime('%b %d, %Y'),"plan_type":plan_type},error=False,msg="Subscription status !!!!")
+#     return Response(r.response, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
