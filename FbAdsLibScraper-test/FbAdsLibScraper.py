@@ -69,7 +69,7 @@ class FbAdsLibScraper:
                 domainProxies["domain"]       = domain
                 combinedProxyDomainList.append(domainProxies)
 
-            with ThreadPoolExecutor(max_workers=50) as exe:
+            with ThreadPoolExecutor(max_workers=10) as exe:
                 result = exe.map(self.startDomainScraper,combinedProxyDomainList)
 
         except Exception as ex:

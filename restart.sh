@@ -1,6 +1,7 @@
 #!/bin/bash
 cd /home/ec2-user/fbadsfinal
-source Fbadslib-env/bin/activate
+sudo python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 
 python manage.py makemigrations
