@@ -1,3 +1,4 @@
+from calendar import c
 from cgi import print_directory
 from functools import partial
 from django.shortcuts import render
@@ -216,7 +217,8 @@ def getAllSavedAds(request):
                         }
                     ]
                     }
-                }
+                },
+            "sort": []
             }
 
             if startdate and enddate :
@@ -1226,9 +1228,10 @@ def getCtaStatus(request):
     cta_status=[]
     if res["hits"]["hits"]:
         for d in res["hits"]["hits"]:
-            cta_status.append(d["_source"]["ctaStatus"])
+            cta_status.append(d["_source"]["ctaStatus"].lower())
         
         set_cta=set(cta_status)
+
         r=rh.ResponseMsg(data={"cta_status":set_cta},error=False,msg="API is working successfully")
         return Response(r.response)
 
