@@ -1,3 +1,4 @@
+from calendar import c
 from cgi import print_directory
 from functools import partial
 from django.shortcuts import render
@@ -63,14 +64,6 @@ bucket_name="fbadslib-dev"
 
 API_KEY = config("STRIPE_SECRET_KEY")
 
-# def pre_signed_url_generator(url):
-#     pre_signed_url = client.generate_presigned_url('get_object',
-#                                                   Params={'Bucket': bucket_name,'Key': url},
-#                                                   ExpiresIn=3600*24)
-#     return pre_signed_url
-
-
-# To check whether the user session is active or not.
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def Isalive(request): 
@@ -216,7 +209,8 @@ def getAllSavedAds(request):
                         }
                     ]
                     }
-                }
+                },
+            "sort": []
             }
 
             if startdate and enddate :
@@ -691,179 +685,6 @@ class ManageSaveAds(viewsets.ViewSet):
         r=rh.ResponseMsg(data=add,error=False,msg="Ad deleted successfully")
         return Response(r.response)
     
-    # @method_decorator(subscription_required)
-    # def list(self,request,pk=None):
-    #     user=request.user
-    #     page_index=request.data.get("page_index")
-    #     startdate=request.data.get("startdate")
-    #     enddate=request.data.get("enddate")
-    #     adcount=request.data.get("adcount")
-    #     adstatus=request.data.get("adstatus")
-    #     fb_likes=request.data.get("fb_likes")
-    #     insta_followers=request.data.get("insta_followers")
-    #     media_type=request.data.get("media_type")
-    #     ctaStatus=request.data.get("cta_status")
-    #     s = request.data.get('keywords')
-    #     p = request.data.get('phrase')
-    #     sort_param=request.data.get('sort_by')
-    #     order_by=request.data.get('order_by')
-    #     increased=request.data.get('increaseCount')
-
-    #     add=[]
-    #     ad_list=[]
-    #     if user:
-    #         obj=SaveAds.objects.filter(user__id=user.id)
-    #         serializer=SaveAdsSerializer(obj,many=True)
-    #         for i in serializer.data:
-    #             ad_list.append(i["ad"])
-        
-    #     query={
-    #         "from": int(page_index)*8,
-    #         "size": 8,
-    #         "query": {
-    #                 "bool": {
-    #                 "must": [
-    #                     {
-    #                     "terms":{
-    #                             "_id": ad_list
-    #                         }
-    #                     }
-    #                 ]
-    #             }
-    #         },
-    #         "sort": []
-    #     }
-
-    #     if startdate and enddate :
-    #         date_query={
-    #             "range": {
-    #                 "startDate": {
-    #                 "gte": startdate,
-    #                 "lte": enddate
-    #                 }
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(date_query)
-
-    #     if adcount:
-    #         adcount_query={
-    #             "range": {
-    #             "noOfCopyAds": {
-    #                 "gte": int(adcount[0]),
-    #                 "lte": int(adcount[1])
-    #                 }
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(adcount_query)
-
-    #     if adstatus:
-    #         status_query={
-    #             "match": {
-    #                 "status.keyword": adstatus
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(status_query)
-        
-    #     if fb_likes:
-    #         likes_query={
-    #             "range": {
-    #             "pageInfo.platforms.likes": {
-    #                 "gte": int(fb_likes[0]),
-    #                 "lte": int(fb_likes[1])
-    #                 }
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(likes_query)
-        
-    #     if insta_followers:
-    #         followers_query={
-    #             "range": {
-    #                 "pageInfo.platforms.followers": {
-    #                 "gte": int(insta_followers[0]),
-    #                 "lte": int(insta_followers[1])
-    #                 }
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(followers_query)
-        
-    #     if media_type:
-    #         media_query={
-    #             "match": {
-    #                 "adMediaType.keyword": media_type
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(media_query)
-
-    #     if ctaStatus:
-    #         cta_query={
-    #             "match": {
-    #                 "ctaStatus.keyword": ctaStatus
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(cta_query)
-
-    #     if s:
-    #         str1=[]
-    #         for i in s:
-    #             str1.append("*"+i+"*")
-            
-    #         str1=" AND ".join(str1)
-            
-    #         keyword_query={
-    #             "query": {
-    #                 "query_string": {
-    #                 "fields": ["*"],
-    #                 "query": str1
-    #                 }
-    #             }
-    #         }
-    #         query["query"]["bool"]["must"].append(keyword_query)
-
-    #     if p:
-    #         for i in p:
-    #             phrase_query={
-    #                     "multi_match": {
-    #                         "query": i.strip(),
-    #                         "type": "phrase", 
-    #                         "fields": ["*"]
-    #                     }
-    #             }
-    #         query["query"]["bool"]["must"].append(phrase_query)
-
-    #     if increased:
-    #         increament_query={
-    #             "match": {
-    #                     "increaseCount": increased
-    #                 }
-    #             }
-    #         query["query"]["bool"]["must"].append(increament_query)
-        
-    #     if sort_param and order_by:
-    #         sort_query={
-    #             sort_param:{"order":order_by}
-    #         }
-    #         query["sort"].append(sort_query)
-       
-    #     ad_ids=[]
-    #     res=es.search(index=es_indice,body=query)
-    #     data=[]
-    #     final_data=[]
-    #     if res["hits"]["hits"]:
-    #         for d in res["hits"]["hits"]:
-    #             # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-    #             # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-    #             # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-    #             # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-    #             d["_source"]["id"]=d["_id"]
-    #             data.append(d["_source"])
-    #         final_data.append({"saved_ads":ad_ids})
-    #         final_data.append({"all_ads": data})
-    #         r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
-    #         return Response(r.response)
-
-    #     r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
-    #     return Response(r.response)
-
 
 class contactSupport(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
@@ -888,8 +709,10 @@ class subAllAds(viewsets.ViewSet):
     # @method_decorator(subscription_required)
     def create(self,request):
         ad_name = request.data.get('ad_name')
+        page_index=request.data.get("page_index")
         query={
-            "size": 10000,
+            "from": int(page_index)*8,
+            "size": 8,
             "query": {
                 "match": {
                     "pageInfo.name": ad_name
@@ -969,99 +792,6 @@ def SavedAdFilterView(request):
     return Response(r.response, status=status.HTTP_200_OK)    
 
 
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# @ensure_csrf_cookie
-# def Stripe_Payment_Method(request):
-#     stripe.api_key = API_KEY
-#     plan = request.data.get('plan')
-#     automatic = 'on'
-#     payment_method = 'card'
-
-#     plan_inst = VideosPlan(plan_id=plan)
-
-#     payment_intent = stripe.PaymentIntent.create(
-#         amount=plan_inst.amount,
-#         currency=plan_inst.currency,
-#         payment_method_types=['card']
-#     )
-
-#     context = {}
-
-#     if payment_method == 'card':
-#         context['secret_key'] = payment_intent.client_secret
-#         context['STRIPE_PUBLISHABLE_KEY'] = config('STRIPE_PUBLISHABLE_KEY')
-#         context['customer_email'] = request.user.email
-#         context['payment_intent_id'] = payment_intent.id
-#         context['automatic'] = automatic
-#         context['stripe_plan_id'] = plan_inst.stripe_plan_id
-#         r=rh.ResponseMsg(data=context,error=False,msg="Success")
-#         return Response(r.response, status=status.HTTP_200_OK)
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# @ensure_csrf_cookie
-# def card(request):
-#     payment_intent_id = request.data.get('payment_intent_id')
-#     payment_method_id = request.data.get('payment_method_id')
-#     stripe_plan_id = request.data.get('stripe_plan_id')
-#     automatic = request.data.get('automatic')
-#     stripe.api_key = API_KEY
-
-#     if automatic == 'on':
-#         # create subs
-#         customer = stripe.Customer.create(
-#             # name="Parth Bhanderi",
-#             # address={
-#             #     "line1": "510 Townsend St",
-#             #     "postal_code": "98140",
-#             #     "city": "San Francisco",
-#             #     "state": "CA",
-#             #     "country": "US",
-#             # },
-#             email=request.user.email,
-#             payment_method=payment_method_id,
-#             invoice_settings={
-#                 'default_payment_method': payment_method_id
-#             }
-#         )
-#         s = stripe.Subscription.create(
-#             customer=customer.id,
-#             items=[
-#                 {
-#                     'plan': stripe_plan_id
-#                 },
-#             ]
-#         )
-
-#         latest_invoice = stripe.Invoice.retrieve(s.latest_invoice)
-#         print(latest_invoice)
-#         ret = stripe.PaymentIntent.confirm(
-#             latest_invoice.payment_intent
-#         )
-
-#         if ret.status == 'requires_action':
-#             pi = stripe.PaymentIntent.retrieve(
-#                 latest_invoice.payment_intent
-#             )
-#             context = {}
-
-#             context['payment_intent_secret'] = pi.client_secret
-#             context['STRIPE_PUBLISHABLE_KEY'] = settings.STRIPE_PUBLISHABLE_KEY
-
-#             r=rh.ResponseMsg(data=context,error=False,msg="Action Required!!!")
-#             return Response(r.response, status=status.HTTP_200_OK)
-    
-#     else:
-#         stripe.PaymentIntent.modify(
-#             payment_intent_id,
-#             payment_method=payment_method_id
-#         )
-
-#     r=rh.ResponseMsg(data={},error=False,msg="Thank You for Payment !!!")
-#     return Response(r.response, status=status.HTTP_200_OK)
-
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def stripe_webhooks(request):
@@ -1132,20 +862,6 @@ def fetch_payment_method(request):
         return Response(r.response, status=status.HTTP_200_OK)
     r=rh.ResponseMsg(data={"status":"Inactive"},error=False,msg="No subscription is active")
     return Response(r.response, status=status.HTTP_200_OK)
-# @api_view(['GET'])
-# # @subscription_required
-# @permission_classes([IsAuthenticated])
-# def check_sub_status(request):
-#     stripe.api_key = API_KEY
-#     sub_obj=Subscription_details.objects.filter(user=request.user).first()
-#     sub_status=stripe.Subscription.retrieve(
-#         sub_obj.subscription_id,
-#     )
-#     print(sub_status)
-#     end_date=sub_status.current_period_end
-#     plan_type=sub_status.plan.nickname
-#     r=rh.ResponseMsg(data={"status":sub_status.status,"end_date":datetime.utcfromtimestamp(end_date).strftime('%b %d, %Y'),"plan_type":plan_type},error=False,msg="Subscription status !!!!")
-#     return Response(r.response, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -1188,14 +904,9 @@ def create_checkout_session(request):
                 r=rh.ResponseMsg(data={},error=True,msg=str(e))
                 return Response(r.response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    # if sub_obj:
-    #     if sub_obj.sub_status ==  False:
-    #         customer_id=sub_obj.customer_id
-
     try:
         checkout_session = stripe.checkout.Session.create(
             customer_email=request.user.email,
-            # customer=customer_id,
             line_items=[
                 {
                     'price': request.data.get("lookup_key"),
@@ -1230,6 +941,7 @@ def getCtaStatus(request):
             cta_status.append(d["_source"]["ctaStatus"])
         
         set_cta=set(cta_status)
+
         r=rh.ResponseMsg(data={"cta_status":set_cta},error=False,msg="API is working successfully")
         return Response(r.response)
 
