@@ -352,6 +352,7 @@ def getAllSavedAds(request):
 class getAllAds(viewsets.ViewSet):
     # @method_decorator(subscription_required)
     def create(self,request):
+        print(request.data)
         page_index=request.data.get("page_index")
         startdate=request.data.get("startdate")
         enddate=request.data.get("enddate")
@@ -497,7 +498,7 @@ class getAllAds(viewsets.ViewSet):
         
         res=es.search(index=es_indice,body=query)
         data=[]
-        final_data=[]
+        final_data={}
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
                 # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
@@ -506,8 +507,8 @@ class getAllAds(viewsets.ViewSet):
                 # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 d["_source"]["id"]=d["_id"]
                 data.append(d["_source"])
-            final_data.append({"saved_ads":ad_ids})
-            final_data.append({"all_ads": data})
+            final_data["saved_ads"] = ad_ids
+            final_data["all_ads"] = data
             r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
 
