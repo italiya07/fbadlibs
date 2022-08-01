@@ -807,10 +807,10 @@ def Verify_Email(request):
             
             user_obj.is_active=True
             user_obj.save()
-            r=rh.ResponseMsg(data={},error=False,msg="User Verified")
+            r=rh.ResponseMsg(data={},error=True,msg="User Verified")
             return Response(r.response, status=status.HTTP_200_OK)
 
-        r=rh.ResponseMsg(data={},error=False,msg="Token is not valid")
+        r=rh.ResponseMsg(data={},error=True,msg="Token is not valid")
         return Response(r.response, status=status.HTTP_200_OK)
 
 class ManageSaveAds(viewsets.ViewSet):
