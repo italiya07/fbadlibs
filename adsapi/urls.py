@@ -29,6 +29,7 @@ urlpatterns = [
     path('logout/', logoutview , name='Logout'),
     path('forgot_password/', Forgotpasswordview , name='forgotpassword'),
     path('change_password/<str:token>', Change_password , name='change_password'),
+    path('verify_email/<str:token>', Verify_Email , name='change_password'),
     path('isalive/', Isalive , name='alive'),
     path('savedad_filters/',SavedAdFilterView,name='savedad_filters'),
     # path('stripe_paymentmethod/',Stripe_Payment_Method,name='Stripe_Payment_Method'),
@@ -41,6 +42,7 @@ urlpatterns = [
     path('phrase_search/',PhraseFilterView,name='phrase_search'),
     path('savedad_phrase_search/',SavedAdPhraseFilterView,name='savedad_phrase_search'),
     path('allsavedads/',getAllSavedAds,name='allsavedads'),
+    path('databyid/',Databyid,name="databyid"),
     # path('check_sub_status/',check_sub_status,name='check_sub_status'),
     path('', include(router.urls)),
 ]

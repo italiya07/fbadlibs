@@ -64,7 +64,7 @@ class User(AbstractBaseUser):
     # profile_picture=models.ImageField(upload_to=get_avatar_path, null=True, blank=True)
     #phone_number=models.PositiveBigIntegerField(null=True)
     date_joined=models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=True) # a admin user; non super-user
     is_superuser = models.BooleanField(default=False) # a superuser
 
@@ -100,6 +100,14 @@ class User(AbstractBaseUser):
 class ForgotPassword(models.Model):
     email=models.ForeignKey(User,on_delete=models.CASCADE)
     forgot_password_token=models.CharField(max_length=100)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email.email
+
+class EmailActivation(models.Model):
+    email=models.ForeignKey(User,on_delete=models.CASCADE)
+    email_verification_token=models.CharField(max_length=100)
     created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

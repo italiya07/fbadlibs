@@ -25,7 +25,7 @@ from rest_framework import serializers
 from .serializer import *
 import uuid
 from django.views.decorators.csrf import ensure_csrf_cookie
-from .helpers import send_forgot_password_email
+from .helpers import send_forgot_password_email,send_activation_email
 from .forms import ChangePasswordCustomForm
 from django.contrib import messages
 import jwt
@@ -501,8 +501,8 @@ class getAllAds(viewsets.ViewSet):
                 # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 d["_source"]["id"]=d["_id"]
                 data.append(d["_source"])
-            final_data.append({"saved_ads":ad_ids})
-            final_data.append({"all_ads": data})
+            final_data["saved_ads"]=ad_ids
+            final_data["all_ads"]= data
         
             r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
@@ -512,7 +512,7 @@ class getAllAds(viewsets.ViewSet):
 
 class userManager(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
-# 89
+
     def create(self,request):
         data=request.data
         if len(data["password"])<7:
@@ -520,12 +520,20 @@ class userManager(viewsets.ViewSet):
             return Response(r.response)
         serializer=UserSerializer(data=data)
         obj=User.objects.filter(email=data["email"]).first()
+        
         if obj:
             r=rh.ResponseMsg(data={},error=True,msg="User already exist")
             return Response(r.response)
+
         if serializer.is_valid():
-            serializer.save()
-            r=rh.ResponseMsg(data=serializer.data,error=False,msg="User created")
+            print("---------------------")
+            serializer.save()   
+            email_token=str(uuid.uuid4())
+            print(serializer.data.get("email"))
+            new_token_obj=EmailActivation.objects.create(email=User.objects.get(email=serializer.data.get("email")),email_verification_token=email_token)
+            new_token_obj.save()
+            send_activation_email(request,email_token,serializer.data.get("email"))
+            r=rh.ResponseMsg(data=serializer.data,error=False,msg="Check your email to activate your account")
             return Response(r.response)
         r=rh.ResponseMsg(data={},error=True,msg="User creation failed")
         return Response(r.response)
@@ -579,7 +587,6 @@ def Forgotpasswordview(request):
         r=rh.ResponseMsg(data={},error=True,msg="Sorry, This email Id does not exist with us")
         return Response(r.response, status=status.HTTP_404_NOT_FOUND)
     user_obj_token=ForgotPassword.objects.filter(email__email=user_obj.email).first()
-    print(user_obj_token)
     token=str(uuid.uuid4())
     if user_obj_token:
         user_obj_token.forgot_password_token=token
@@ -591,7 +598,7 @@ def Forgotpasswordview(request):
     r=rh.ResponseMsg(data={},error=False,msg="Success")
     return Response(r.response, status=status.HTTP_200_OK)    
     
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 @ensure_csrf_cookie
 def Change_password(request,token):
     if request.method == 'POST':
@@ -622,6 +629,21 @@ def Change_password(request,token):
         'form': form
     })    
 
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def Verify_Email(request,token):
+    if token:
+        token_obj=EmailActivation.objects.filter(email_verification_token=token).first()
+        if token_obj:
+            user_obj=User.objects.filter(email=token_obj.email).first()
+            user_obj.is_active=True
+            user_obj.save()
+            token_obj.delete()
+            r=rh.ResponseMsg(data={},error=False,msg="User Verified")
+            return Response(r.response, status=status.HTTP_200_OK)
+
+        r=rh.ResponseMsg(data={},error=False,msg="Token is not valid")
+        return Response(r.response, status=status.HTTP_200_OK)
 
 class ManageSaveAds(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
@@ -1047,3 +1069,27 @@ def SavedAdPhraseFilterView(request):
 
     r=rh.ResponseMsg(data={},error=False,msg="Success")
     return Response(r.response, status=status.HTTP_200_OK)   
+
+@api_view(["POST"])
+def Databyid(request):
+    id=request.data.get("id")
+    if id:
+        query={
+                "query": {
+                    "match": {
+                        "_id" : id
+                    }
+                }
+        }
+        res=es.search(index=es_indice,body=query)
+        
+        if res["hits"]["hits"]:
+            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
+            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
+            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
+            r=rh.ResponseMsg(data=res["hits"]["hits"][0]["_source"],error=False,msg="Ad Saved")
+            return Response(r.response)
+
+        r=rh.ResponseMsg(data={},error=True,msg="Ad not found")
+        return Response(r.response)

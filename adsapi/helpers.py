@@ -12,10 +12,32 @@ def send_forgot_password_email(request,token,email):
     msg["From"]=config('From_email_fp')
     msg["To"]=email
     msg.attach(MIMEText(mail_content, 'plain'))
+    
     # server=smtplib.SMTP('smtp.gmail.com', 587)
     server=smtplib.SMTP("smtp.zoho.in", 587)
     server.starttls()
     server.login(config("From_email_fp"),config("password_fp"))
+    
+    text = msg.as_string()
+    server.sendmail(config('From_email_fp'), email, text)
+    server.quit()
+    return True
+
+def send_activation_email(request,token,email):
+    subject='Your account activation link from servicepack'
+    domain=request.META['HTTP_HOST']
+    mail_content=f'Hi,click on the link to activate your account {domain}/api/verify_email/{token}'
+    msg = MIMEMultipart()
+    msg["Subject"]=subject
+    msg["From"]=config('From_email_fp')
+    msg["To"]=email
+    msg.attach(MIMEText(mail_content, 'plain'))
+    
+    # server=smtplib.SMTP('smtp.gmail.com', 587)
+    server=smtplib.SMTP("smtp.zoho.in", 587)
+    server.starttls()
+    server.login(config("From_email_fp"),config("password_fp"))
+    
     text = msg.as_string()
     server.sendmail(config('From_email_fp'), email, text)
     server.quit()
