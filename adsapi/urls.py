@@ -41,6 +41,7 @@ urlpatterns = [
     path('phrase_search/',PhraseFilterView,name='phrase_search'),
     path('savedad_phrase_search/',SavedAdPhraseFilterView,name='savedad_phrase_search'),
     path('allsavedads/',getAllSavedAds,name='allsavedads'),
+    path('checkAdByFilter/',checkAdByFilter,name='checkAdByFilter'),
     # path('check_sub_status/',check_sub_status,name='check_sub_status'),
     path('', include(router.urls)),
 ]
