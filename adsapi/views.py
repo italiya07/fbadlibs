@@ -794,7 +794,8 @@ def Change_password(request,token):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
-def Verify_Email(request,token):
+def Verify_Email(request):
+    token=request.GET.get('token')
     if token:
         payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
         
