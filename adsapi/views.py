@@ -793,9 +793,13 @@ def Change_password(request,token):
 def Verify_Email(request,token):
     if token:
         payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
-        print(payload)
+        
         if payload:
             user_obj=User.objects.filter(email=payload["email"]).first()
+            if user_obj.is_active:
+                r=rh.ResponseMsg(data={},error=False,msg="User is already verified")
+                return Response(r.response, status=status.HTTP_200_OK)
+            
             user_obj.is_active=True
             user_obj.save()
             r=rh.ResponseMsg(data={},error=False,msg="User Verified")
