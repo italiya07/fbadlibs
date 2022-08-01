@@ -14,7 +14,7 @@ def send_forgot_password_email(request,token,email):
     msg.attach(MIMEText(mail_content, 'plain'))
     
     # server=smtplib.SMTP('smtp.gmail.com', 587)
-    server=smtplib.SMTP("smtp.zoho.in", 587)
+    server=smtplib.SMTP("smtp.zoho.com", 587)
     server.starttls()
     server.login(config("From_email_fp"),config("password_fp"))
     
@@ -34,7 +34,7 @@ def send_activation_email(request,token,email):
     msg.attach(MIMEText(mail_content, 'plain'))
     
     # server=smtplib.SMTP('smtp.gmail.com', 587)
-    server=smtplib.SMTP("smtp.zoho.in", 587)
+    server=smtplib.SMTP("smtp.zoho.com", 587)
     server.starttls()
     server.login(config("From_email_fp"),config("password_fp"))
     
