@@ -119,38 +119,42 @@ def loginview(request):
     # decMessage = fernet.decrypt(password.encode('utf-8')).decode()
     user=User.objects.filter(email=email).first()
     if user :
-        if user.check_password(password) and user.is_active:
-            authenticate(email=email, password=user.check_password(password))
-            response = Response() 
-            access_token = token.generate_access_token(user)
-            refresh_token = token.generate_refresh_token(user)
-            response.set_cookie(
-                        key = 'access_token', 
-                        value = access_token,
-                        expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
-                        secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                        httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                        samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                    )
-            response.set_cookie(
-                        key = 'refresh_token', 
-                        value = refresh_token,
-                        expires = datetime.datetime.utcnow()+timedelta(seconds=int(config('REFRESH_TOKEN_EXPIRE_TIME_SECONDS'))),
-                        secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                        httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                        samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
-                    )
-            # csrf.get_token(request)
-            response.data={
-                "error": False,
-                "data":{},
-                "message": "Successfully Login"
-            }
-            return response
+        if user.is_active:
+            if user.check_password(password):
+                authenticate(email=email, password=user.check_password(password))
+                response = Response() 
+                access_token = token.generate_access_token(user)
+                refresh_token = token.generate_refresh_token(user)
+                response.set_cookie(
+                            key = 'access_token', 
+                            value = access_token,
+                            expires = datetime.datetime.utcnow()+timedelta(seconds=int(config("ACCESS_TOKEN_EXPIRE_TIME_SECONDS"))),
+                            secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                            httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                            samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                        )
+                response.set_cookie(
+                            key = 'refresh_token', 
+                            value = refresh_token,
+                            expires = datetime.datetime.utcnow()+timedelta(seconds=int(config('REFRESH_TOKEN_EXPIRE_TIME_SECONDS'))),
+                            secure = settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                            httponly = settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                            samesite = settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+                        )
+                # csrf.get_token(request)
+                response.data={
+                    "error": False,
+                    "data":{},
+                    "message": "Successfully Login"
+                }
+                return response
+        
+            else:
+                r=rh.ResponseMsg(data={},error=True,msg="Invalid email address or password")
+                return Response(r.response, status=status.HTTP_404_NOT_FOUND)
         else:
-            r=rh.ResponseMsg(data={},error=True,msg="Invalid email address or password")
+            r=rh.ResponseMsg(data={},error=True,msg="Please verify your email address")
             return Response(r.response, status=status.HTTP_404_NOT_FOUND)
-    
     r=rh.ResponseMsg(data={},error=True,msg="User does not exist with us.")
     return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
