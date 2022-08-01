@@ -26,3 +26,13 @@ def generate_refresh_token(user):
     refresh_token = jwt.encode(refresh_token_payload, config("REFRESH_TOKEN_SECRET") , algorithm='HS256').decode('utf-8')
 
     return refresh_token
+
+def generate_activation_token(user):
+    activation_token_payload={
+        'email':user.email,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=int(config("ACTIVATION_TOKEN_EXPIRE_TIME_SECONDS"))),
+        'iat': datetime.datetime.utcnow()
+    }
+    activation_token = jwt.encode(activation_token_payload, config("SECRET_KEY") , algorithm='HS256').decode('utf-8')
+
+    return activation_token

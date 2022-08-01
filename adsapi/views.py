@@ -687,12 +687,10 @@ class userManager(viewsets.ViewSet):
             return Response(r.response)
 
         if serializer.is_valid():
-            print("---------------------")
             serializer.save()   
-            email_token=str(uuid.uuid4())
-            print(serializer.data.get("email"))
-            new_token_obj=EmailActivation.objects.create(email=User.objects.get(email=serializer.data.get("email")),email_verification_token=email_token)
-            new_token_obj.save()
+            user=User.objects.get(email=serializer.data.get("email"))
+            email_token=token.generate_activation_token(user)
+            print(email_token)
             send_activation_email(request,email_token,serializer.data.get("email"))
             r=rh.ResponseMsg(data=serializer.data,error=False,msg="Check your email to activate your account")
             return Response(r.response)
@@ -794,12 +792,12 @@ def Change_password(request,token):
 @permission_classes([AllowAny])
 def Verify_Email(request,token):
     if token:
-        token_obj=EmailActivation.objects.filter(email_verification_token=token).first()
-        if token_obj:
-            user_obj=User.objects.filter(email=token_obj.email).first()
+        payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
+        print(payload)
+        if payload:
+            user_obj=User.objects.filter(email=payload["email"]).first()
             user_obj.is_active=True
             user_obj.save()
-            token_obj.delete()
             r=rh.ResponseMsg(data={},error=False,msg="User Verified")
             return Response(r.response, status=status.HTTP_200_OK)
 
