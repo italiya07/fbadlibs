@@ -26,7 +26,7 @@ def send_forgot_password_email(request,token,email):
 def send_activation_email(request,token,email):
     subject='Your account activation link from servicepack'
     domain=request.META['HTTP_HOST']
-    mail_content=f'Hi,click on the link to activate your account {domain}/api/verify_email/{token}'
+    mail_content=f'Hi,click on the link to verify your account {config("front_end")}/verify_email/{token}'
     msg = MIMEMultipart()
     msg["Subject"]=subject
     msg["From"]=config('From_email_fp')
