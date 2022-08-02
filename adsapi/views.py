@@ -772,6 +772,7 @@ def Change_password(request):
     if fp_obj:
         fp_obj.email.set_password(password)
         fp_obj.email.save()
+        fp_obj.delete()
         r=rh.ResponseMsg(data={},error=False,msg="Password updated")
         return Response(r.response, status=status.HTTP_200_OK)
 
@@ -809,7 +810,7 @@ def Change_password(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def Verify_Email(request):
-    token=request.POST.get('token')
+    token=request.GET.get('token')
     if token:
         payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
         
