@@ -766,7 +766,7 @@ def Forgotpasswordview(request):
 @ensure_csrf_cookie
 def Change_password(request):
     password=request.data.get("password")
-    token=request.GET.get("token")
+    token=request.data.get("token")
     fp_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
     
     if fp_obj:
