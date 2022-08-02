@@ -761,36 +761,50 @@ def Forgotpasswordview(request):
     r=rh.ResponseMsg(data={},error=False,msg="Success")
     return Response(r.response, status=status.HTTP_200_OK)    
     
+@api_view(['POST'])
 @permission_classes([AllowAny])
 @ensure_csrf_cookie
-def Change_password(request,token):
-    if request.method == 'POST':
-        form = ChangePasswordCustomForm(request.POST)
-        if form.is_valid():
-            print("hello")
-            user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
-            if user_obj: 
-                password=form.cleaned_data.get("new_password2")
-                user_obj.email.set_password(password)
-                user_obj.email.save()
-                print(user_obj.email,password)
-                messages.success(request, 'Your password was successfully updated!')
-                user_obj.delete()
-                return render(request, 'success.html')
-            else:
-                return render(request, 'error.html')
-        else:
-            print(form.errors)
-            return render(request, 'error.html')
-    else:
-        user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
-        if user_obj:
-            form = ChangePasswordCustomForm()
-        else:
-            return render(request, 'error.html')
-    return render(request, 'change_password.html', {
-        'form': form
-    })    
+def Change_password(request):
+    password=request.data.get("password")
+    token=request.data.get("token")
+    fp_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+    
+    if fp_obj:
+        fp_obj.email.set_password(password)
+        fp_obj.email.save()
+        r=rh.ResponseMsg(data={},error=False,msg="Password updated")
+        return Response(r.response, status=status.HTTP_200_OK)
+
+    r=rh.ResponseMsg(data={},error=True,msg="Token is not valid")
+    return Response(r.response, status=status.HTTP_200_OK)
+    
+    # if request.method == 'POST':
+    #     form = ChangePasswordCustomForm(request.POST)
+    #     if form.is_valid():
+    #         print("hello")
+    #         user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+    #         if user_obj: 
+    #             password=form.cleaned_data.get("new_password2")
+    #             user_obj.email.set_password(password)
+    #             user_obj.email.save()
+    #             print(user_obj.email,password)
+    #             messages.success(request, 'Your password was successfully updated!')
+    #             user_obj.delete()
+    #             return render(request, 'success.html')
+    #         else:
+    #             return render(request, 'error.html')
+    #     else:
+    #         print(form.errors)
+    #         return render(request, 'error.html')
+    # else:
+    #     user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+    #     if user_obj:
+    #         form = ChangePasswordCustomForm()
+    #     else:
+    #         return render(request, 'error.html')
+    # return render(request, 'change_password.html', {
+    #     'form': form
+    # })    
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -1258,3 +1272,24 @@ def Databyid(request):
 
         r=rh.ResponseMsg(data={},error=True,msg="Ad not found")
         return Response(r.response)
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def resendVerificationEmail(request):
+    email=request.data.get("email")
+    user=User.objects.get(email=email)
+    
+    if user:
+        
+        if user.is_active:
+            r=rh.ResponseMsg(data={},error=False,msg="User is already verified.")
+            return Response(r.response)
+
+        email_token=token.generate_activation_token(user)
+        print(email_token)
+        send_activation_email(request,email_token,email)
+        r=rh.ResponseMsg(data={},error=False,msg="Email sent")
+        return Response(r.response)
+    
+    r=rh.ResponseMsg(data={},error=True,msg="User with this email address does not exist with us.")
+    return Response(r.response)

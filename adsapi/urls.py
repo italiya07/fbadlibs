@@ -44,6 +44,6 @@ urlpatterns = [
     path('allsavedads/',getAllSavedAds,name='allsavedads'),
     path('databyid/',Databyid,name="databyid"),
     path('checkAdByFilter/',checkAdByFilter,name='checkAdByFilter'),
-    # path('check_sub_status/',check_sub_status,name='check_sub_status'),
+    path('resend_email/',resendVerificationEmail,name='resend_email'),
     path('', include(router.urls)),
 ]

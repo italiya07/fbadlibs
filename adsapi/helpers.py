@@ -6,7 +6,7 @@ from decouple import config
 def send_forgot_password_email(request,token,email):
     subject='Your forgot Password link from servicepack'
     domain=request.META['HTTP_HOST']
-    mail_content=f'Hi,click on the link to change your password {domain}/api/change_password/{token}'
+    mail_content=f'Hi,click on the link to change your password {domain}/api/change_password/?token={token}'
     msg = MIMEMultipart()
     msg["Subject"]=subject
     msg["From"]=config('From_email_fp')
