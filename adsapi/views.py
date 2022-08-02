@@ -1258,3 +1258,24 @@ def Databyid(request):
 
         r=rh.ResponseMsg(data={},error=True,msg="Ad not found")
         return Response(r.response)
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def resendVerificationEmail(request):
+    email=request.data.get("email")
+    user=User.objects.get(email=email)
+    
+    if user:
+        
+        if user.is_active:
+            r=rh.ResponseMsg(data={},error=False,msg="User is already verified.")
+            return Response(r.response)
+
+        email_token=token.generate_activation_token(user)
+        print(email_token)
+        send_activation_email(request,email_token,email)
+        r=rh.ResponseMsg(data={},error=False,msg="Email sent")
+        return Response(r.response)
+    
+    r=rh.ResponseMsg(data={},error=True,msg="User with this email address does not exist with us.")
+    return Response(r.response)
