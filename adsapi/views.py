@@ -764,9 +764,10 @@ def Forgotpasswordview(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @ensure_csrf_cookie
-def Change_password(request,token):
-    fp_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+def Change_password(request):
     password=request.data.get("password")
+    token=request.data.get("token")
+    fp_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
     
     if fp_obj:
         fp_obj.email.set_password(password)
@@ -776,6 +777,7 @@ def Change_password(request,token):
 
     r=rh.ResponseMsg(data={},error=True,msg="Token is not valid")
     return Response(r.response, status=status.HTTP_200_OK)
+    
     # if request.method == 'POST':
     #     form = ChangePasswordCustomForm(request.POST)
     #     if form.is_valid():
