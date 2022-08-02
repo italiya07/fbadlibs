@@ -761,36 +761,48 @@ def Forgotpasswordview(request):
     r=rh.ResponseMsg(data={},error=False,msg="Success")
     return Response(r.response, status=status.HTTP_200_OK)    
     
+@api_view(['POST'])
 @permission_classes([AllowAny])
 @ensure_csrf_cookie
 def Change_password(request,token):
-    if request.method == 'POST':
-        form = ChangePasswordCustomForm(request.POST)
-        if form.is_valid():
-            print("hello")
-            user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
-            if user_obj: 
-                password=form.cleaned_data.get("new_password2")
-                user_obj.email.set_password(password)
-                user_obj.email.save()
-                print(user_obj.email,password)
-                messages.success(request, 'Your password was successfully updated!')
-                user_obj.delete()
-                return render(request, 'success.html')
-            else:
-                return render(request, 'error.html')
-        else:
-            print(form.errors)
-            return render(request, 'error.html')
-    else:
-        user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
-        if user_obj:
-            form = ChangePasswordCustomForm()
-        else:
-            return render(request, 'error.html')
-    return render(request, 'change_password.html', {
-        'form': form
-    })    
+    fp_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+    password=request.data.get("password")
+    
+    if fp_obj:
+        fp_obj.email.set_password(password)
+        fp_obj.email.save()
+        r=rh.ResponseMsg(data={},error=False,msg="Password updated")
+        return Response(r.response, status=status.HTTP_200_OK)
+
+    r=rh.ResponseMsg(data={},error=True,msg="Token is not valid")
+    return Response(r.response, status=status.HTTP_200_OK)
+    # if request.method == 'POST':
+    #     form = ChangePasswordCustomForm(request.POST)
+    #     if form.is_valid():
+    #         print("hello")
+    #         user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+    #         if user_obj: 
+    #             password=form.cleaned_data.get("new_password2")
+    #             user_obj.email.set_password(password)
+    #             user_obj.email.save()
+    #             print(user_obj.email,password)
+    #             messages.success(request, 'Your password was successfully updated!')
+    #             user_obj.delete()
+    #             return render(request, 'success.html')
+    #         else:
+    #             return render(request, 'error.html')
+    #     else:
+    #         print(form.errors)
+    #         return render(request, 'error.html')
+    # else:
+    #     user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
+    #     if user_obj:
+    #         form = ChangePasswordCustomForm()
+    #     else:
+    #         return render(request, 'error.html')
+    # return render(request, 'change_password.html', {
+    #     'form': form
+    # })    
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
