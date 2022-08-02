@@ -809,7 +809,7 @@ def Change_password(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def Verify_Email(request):
-    token=request.GET.get('token')
+    token=request.POST.get('token')
     if token:
         payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
         
