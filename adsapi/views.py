@@ -154,12 +154,12 @@ def loginview(request):
         
             else:
                 r=rh.ResponseMsg(data={},error=True,msg="Invalid email address or password")
-                return Response(r.response)
+                return Response(r.response, status=status.HTTP_404_NOT_FOUND)
         else:
             r=rh.ResponseMsg(data={},error=True,msg="Please verify your email address")
             return Response(r.response, status=status.HTTP_401_UNAUTHORIZED)
     r=rh.ResponseMsg(data={},error=True,msg="User does not exist with us.")
-    return Response(r.response)
+    return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
