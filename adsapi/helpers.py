@@ -4,7 +4,7 @@ from email.mime.text import MIMEText
 from decouple import config
 
 def send_forgot_password_email(request,token,email):
-    subject='Your forgot Password link from servicepack'
+    subject='Your forgot Password link from EYE OF ECOM'
     domain=request.META['HTTP_HOST']
     mail_content=f'Hi,click on the link to change your password {config("front_end")}/auth/update_password/?token={token}'
     msg = MIMEMultipart()
@@ -24,7 +24,7 @@ def send_forgot_password_email(request,token,email):
     return True
 
 def send_activation_email(request,token,email):
-    subject='Your account activation link from servicepack'
+    subject='Your account activation link from EYE OF ECOM'
     domain=request.META['HTTP_HOST']
     mail_content=f'Hi,click on the link to verify your account {config("front_end")}/auth/verify_email/?token={token}'
     msg = MIMEMultipart()
