@@ -14,4 +14,3 @@ admin.site.register(User,Useradmin)
 
 admin.site.register(SaveAds)
 admin.site.register(Subscription_details)
-admin.site.register(EmailActivation)

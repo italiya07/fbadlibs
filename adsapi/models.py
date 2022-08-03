@@ -105,14 +105,6 @@ class ForgotPassword(models.Model):
     def __str__(self):
         return self.email.email
 
-class EmailActivation(models.Model):
-    email=models.ForeignKey(User,on_delete=models.CASCADE)
-    email_verification_token=models.CharField(max_length=100)
-    created_at=models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.email.email
-
 class SaveAds(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     ad=models.CharField(max_length=100)
@@ -122,3 +114,4 @@ class Subscription_details(models.Model):
     customer_id=models.CharField(max_length=122,null=False,blank=False)
     subscription_id=models.CharField(max_length=122)
     sub_status=models.BooleanField(default=False)
+    created_at=models.DateTimeField(auto_now_add=True)

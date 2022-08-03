@@ -779,33 +779,6 @@ def Change_password(request):
     r=rh.ResponseMsg(data={},error=True,msg="Token is not valid")
     return Response(r.response, status=status.HTTP_200_OK)
     
-    # if request.method == 'POST':
-    #     form = ChangePasswordCustomForm(request.POST)
-    #     if form.is_valid():
-    #         print("hello")
-    #         user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
-    #         if user_obj: 
-    #             password=form.cleaned_data.get("new_password2")
-    #             user_obj.email.set_password(password)
-    #             user_obj.email.save()
-    #             print(user_obj.email,password)
-    #             messages.success(request, 'Your password was successfully updated!')
-    #             user_obj.delete()
-    #             return render(request, 'success.html')
-    #         else:
-    #             return render(request, 'error.html')
-    #     else:
-    #         print(form.errors)
-    #         return render(request, 'error.html')
-    # else:
-    #     user_obj=ForgotPassword.objects.filter(forgot_password_token=token).first()
-    #     if user_obj:
-    #         form = ChangePasswordCustomForm()
-    #     else:
-    #         return render(request, 'error.html')
-    # return render(request, 'change_password.html', {
-    #     'form': form
-    # })    
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -941,58 +914,6 @@ class subAllAds(viewsets.ViewSet):
         r=rh.ResponseMsg(data=[],error=True,msg="Data is not available") 
         return Response(r.response)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-# @subscription_required
-@ensure_csrf_cookie
-@method_decorator(subscription_required,name='list')
-def SavedAdFilterView(request):
-    savedad_obj=SaveAds.objects.filter(user__id=request.user.id)
-    serializer=SaveAdsSerializer(savedad_obj,many=True)
-    ad_list=[]
-    
-    for i in serializer.data:
-        print(i)
-        ad_list.append(i["ad"])
-
-    s = request.data.get('keywords')
-    str1=" AND ".join(s)
-    query={
-    "query": {
-        "bool": {
-        "must": [
-            {
-            "terms": {
-                "_id": ad_list
-            }
-            },
-            {
-            "query_string": {
-                "fields": ["*"],
-                "query": str1
-            }
-            }
-        ]
-        }
-    }
-    }
-
-    res=es.search(index=es_indice,body=query)
-    data=[]
-
-    if res["hits"]["hits"]:
-        for d in res["hits"]["hits"]:
-            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-            d["_source"]["id"]=d["_id"]
-            data.append(d["_source"])
-        r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
-        return Response(r.response)
-
-    r=rh.ResponseMsg(data={},error=False,msg="Success")
-    return Response(r.response, status=status.HTTP_200_OK)    
 
 
 @api_view(["POST"])
@@ -1150,105 +1071,6 @@ def getCtaStatus(request):
 
     r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
     return Response(r.response)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@ensure_csrf_cookie
-def PhraseFilterView(request):
-    s = request.data.get('phrase')
-    query={
-            "size": 10000,
-            "query": {
-                "bool": {
-                "must": []
-                }
-            }
-        }
-    
-    for i in s:
-        phrase_query={
-                "multi_match": {
-                    "query": i.strip(),
-                    "type": "phrase", 
-                    "fields": ["*"]
-                }
-        }
-        
-        query["query"]["bool"]["must"].append(phrase_query)
-
-    res=es.search(index=es_indice,body=query)
-    data=[]
-
-    if res["hits"]["hits"]:
-        for d in res["hits"]["hits"]:
-            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-            d["_source"]["id"]=d["_id"]
-            data.append(d["_source"])
-        r=rh.ResponseMsg(data=data,error=False,msg="phrase searching")
-        return Response(r.response)
-
-    r=rh.ResponseMsg(data={},error=False,msg="Success")
-    return Response(r.response, status=status.HTTP_200_OK)    
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@ensure_csrf_cookie
-def SavedAdPhraseFilterView(request):
-    savedad_obj=SaveAds.objects.filter(user__id=request.user.id)
-    serializer=SaveAdsSerializer(savedad_obj,many=True)
-    ad_list=[]
-    
-    for i in serializer.data:
-        print(i)
-        ad_list.append(i["ad"])
-
-    print(ad_list)
-
-    s = request.data.get('phrase')
-    
-    query={
-    "query": {
-            "bool": {
-            "must": [
-                {
-                "terms": {
-                        "_id": ad_list
-                    }
-                }
-            ]
-            }
-        }
-    }
-
-    for i in s:
-        phrase_query={
-                "multi_match": {
-                    "query": i.strip(),
-                    "type": "phrase", 
-                    "fields": ["*"]
-                }
-        }
-        query["query"]["bool"]["must"].append(phrase_query)
-
-    res=es.search(index=es_indice,body=query)
-    data=[]
-
-    if res["hits"]["hits"]:
-        for d in res["hits"]["hits"]:
-            # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["bucketMediaURL"]=pre_signed_url_generator(url)
-            # url=str(d["_source"].get("thumbBucketUrl")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
-            # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
-            d["_source"]["id"]=d["_id"]
-            data.append(d["_source"])
-        r=rh.ResponseMsg(data=data,error=False,msg="phrase searching")
-        return Response(r.response)
-
-    r=rh.ResponseMsg(data={},error=False,msg="Success")
-    return Response(r.response, status=status.HTTP_200_OK)   
 
 @api_view(["POST"])
 def Databyid(request):
