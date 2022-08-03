@@ -22,5 +22,4 @@ class Subadmin(admin.ModelAdmin):
     search_fields=['user','sub_status']
     list_filter=['user','sub_status','created_at']
     list_display=['user','customer_id','subscription_id','sub_status','created_at']
-
-admin.site.register(Subscription_details)
+admin.site.register(Subscription_details,Subadmin)
