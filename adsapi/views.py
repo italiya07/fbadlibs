@@ -1,5 +1,6 @@
 from calendar import c
 from cgi import print_directory
+from email.policy import HTTP
 from functools import partial
 from django.shortcuts import render
 from elastic_transport import Serializer
@@ -147,6 +148,8 @@ def loginview(request):
                     "data":{},
                     "message": "Successfully Login"
                 }
+
+                response.status_code=200
                 return response
         
             else:
@@ -154,7 +157,7 @@ def loginview(request):
                 return Response(r.response, status=status.HTTP_404_NOT_FOUND)
         else:
             r=rh.ResponseMsg(data={},error=True,msg="Please verify your email address")
-            return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+            return Response(r.response, status=status.HTTP_401_UNAUTHORIZED)
     r=rh.ResponseMsg(data={},error=True,msg="User does not exist with us.")
     return Response(r.response, status=status.HTTP_404_NOT_FOUND)
 
