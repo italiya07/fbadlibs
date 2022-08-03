@@ -790,15 +790,15 @@ def Verify_Email(request):
         if payload:
             user_obj=User.objects.filter(email=payload["email"]).first()
             if user_obj.is_active:
-                r=rh.ResponseMsg(data={},error=False,msg="User is already verified")
+                r=rh.ResponseMsg(data={},error=True,msg="User account has already been activated.")
                 return Response(r.response, status=status.HTTP_200_OK)
             
             user_obj.is_active=True
             user_obj.save()
-            r=rh.ResponseMsg(data={},error=True,msg="User Verified")
+            r=rh.ResponseMsg(data={},error=False,msg="User Verified")
             return Response(r.response, status=status.HTTP_200_OK)
 
-        r=rh.ResponseMsg(data={},error=True,msg="Token is not valid")
+        r=rh.ResponseMsg(data={},error=True,msg="Token has already been expired")
         return Response(r.response, status=status.HTTP_200_OK)
 
 class ManageSaveAds(viewsets.ViewSet):
