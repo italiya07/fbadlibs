@@ -788,7 +788,12 @@ def Change_password(request):
 def Verify_Email(request):
     token=request.GET.get('token')
     if token:
-        payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
+        
+        try:
+            payload = jwt.decode(token, config("SECRET_KEY"), algorithms=['HS256'])
+        except:
+            r=rh.ResponseMsg(data={},error=True,msg="Token has already been expired")
+            return Response(r.response, status=status.HTTP_200_OK)
         
         if payload:
             user_obj=User.objects.filter(email=payload["email"]).first()
@@ -800,9 +805,6 @@ def Verify_Email(request):
             user_obj.save()
             r=rh.ResponseMsg(data={},error=False,msg="User Verified")
             return Response(r.response, status=status.HTTP_200_OK)
-
-        r=rh.ResponseMsg(data={},error=True,msg="Token has already been expired")
-        return Response(r.response, status=status.HTTP_200_OK)
 
 class ManageSaveAds(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
