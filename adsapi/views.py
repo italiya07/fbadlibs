@@ -154,7 +154,7 @@ def loginview(request):
         
             else:
                 r=rh.ResponseMsg(data={},error=True,msg="Invalid email address or password")
-                return Response(r.response, status=status.HTTP_404_NOT_FOUND)
+                return Response(r.response, status=status.HTTP_400_BAD_REQUEST)
         else:
             r=rh.ResponseMsg(data={},error=True,msg="Please verify your email address")
             return Response(r.response, status=status.HTTP_401_UNAUTHORIZED)
