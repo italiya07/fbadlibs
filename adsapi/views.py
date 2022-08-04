@@ -26,7 +26,7 @@ from rest_framework import serializers
 from .serializer import *
 import uuid
 from django.views.decorators.csrf import ensure_csrf_cookie
-from .helpers import send_forgot_password_email,send_activation_email
+from .helpers import send_forgot_password_email,send_activation_email, send_support_email
 from .forms import ChangePasswordCustomForm
 from django.contrib import messages
 import jwt
@@ -869,34 +869,17 @@ class ManageSaveAds(viewsets.ViewSet):
     
 
 class contactSupport(viewsets.ViewSet):
-    permission_classes=[IsPostOrIsAuthenticated]
     def create(self,request):
         email_sender=request.data.get('email')
         name=request.data.get('name')
-        msg=request.data.get('message')
+        message=request.data.get('message')
 
-        MAIL_SERVER = 'smtp.zoho.in'
-        TO_ADDRESS = config("From_email_fp")
-        FROM_ADDRESS = config("From_email_fp")
-        REPLY_TO_ADDRESS = email_sender
-        import smtplib
-        import email.mime.multipart
-        msg = email.mime.multipart.MIMEMultipart()
-        msg['to'] = TO_ADDRESS
-        msg['from'] = FROM_ADDRESS
-        msg['subject'] = 'testing reply-to header'
-        msg.add_header('reply-to', REPLY_TO_ADDRESS)
-        server = smtplib.SMTP(MAIL_SERVER)
-        server.sendmail(msg['from'], [msg['to']], msg.as_string())
-        # sender = config("From_email_fp")
-        # server = smtplib.SMTP("smtp.zoho.in", 587)
-        # server.starttls()
-        # server.login(config("From_email_fp"),config("password_fp"))
-        # MSG = f"Subject: mail from {name} :\n\nSender Name :- {name}\n\nMessage     :- {msg} \n\nreply back on {email_sender}"
-        # server.sendmail(config("From_email_fp"),config("From_email_fp"),MSG)
-        # server.quit()
-        
-        r=rh.ResponseMsg(data={},error=False,msg="Email sent")
+        result=send_support_email(email_sender,name,message)
+
+        if result:
+            r=rh.ResponseMsg(data={},error=False,msg="Email sent")
+            return Response(r.response)
+        r=rh.ResponseMsg(data={},error=True,msg="Email not sent")
         return Response(r.response)
 
 # @method_decorator(subscription_required,name='list')
