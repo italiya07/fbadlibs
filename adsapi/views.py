@@ -875,13 +875,26 @@ class contactSupport(viewsets.ViewSet):
         name=request.data.get('name')
         msg=request.data.get('message')
 
-        sender = config("From_email_fp")
-        server = smtplib.SMTP("smtp.zoho.in", 587)
-        server.starttls()
-        server.login(config("From_email_fp"),config("password_fp"))
-        MSG = f"Subject: mail from {name} :\n\nSender Name :- {name}\n\nMessage     :- {msg} \n\nreply back on {email_sender}"
-        server.sendmail("drashti.flyontechsolution@gmail.com",config("From_email_fp"),MSG)
-        server.quit()
+        MAIL_SERVER = 'smtp.zoho.in'
+        TO_ADDRESS = config("From_email_fp")
+        FROM_ADDRESS = config("From_email_fp")
+        REPLY_TO_ADDRESS = email_sender
+        import smtplib
+        import email.mime.multipart
+        msg = email.mime.multipart.MIMEMultipart()
+        msg['to'] = TO_ADDRESS
+        msg['from'] = FROM_ADDRESS
+        msg['subject'] = 'testing reply-to header'
+        msg.add_header('reply-to', REPLY_TO_ADDRESS)
+        server = smtplib.SMTP(MAIL_SERVER)
+        server.sendmail(msg['from'], [msg['to']], msg.as_string())
+        # sender = config("From_email_fp")
+        # server = smtplib.SMTP("smtp.zoho.in", 587)
+        # server.starttls()
+        # server.login(config("From_email_fp"),config("password_fp"))
+        # MSG = f"Subject: mail from {name} :\n\nSender Name :- {name}\n\nMessage     :- {msg} \n\nreply back on {email_sender}"
+        # server.sendmail(config("From_email_fp"),config("From_email_fp"),MSG)
+        # server.quit()
         
         r=rh.ResponseMsg(data={},error=False,msg="Email sent")
         return Response(r.response)
