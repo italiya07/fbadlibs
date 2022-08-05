@@ -723,7 +723,7 @@ class userManager(viewsets.ViewSet):
                     serializer.save(password=data["n_password"])
                     r=rh.ResponseMsg(data=serializer.data,error=False,msg="Password Updated")
                     return Response(r.response)
-            r=rh.ResponseMsg(data={},error=True,msg="Password mismatch")
+            r=rh.ResponseMsg(data={},error=True,msg="Current password mismatch")
             return Response(r.response)
         else:
             serializer=UserSerializer(user,data=data,partial=True)
