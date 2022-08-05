@@ -1019,7 +1019,7 @@ def create_checkout_session(request):
                     ],
                     mode='subscription',
                     success_url=f'{config("front_end")}/',
-                    cancel_url=f'{config("front_end")}/payment',
+                    cancel_url=f'{config("front_end")}/plans',
                 )
                 r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
                 return Response(r.response, status=status.HTTP_200_OK)
@@ -1040,7 +1040,7 @@ def create_checkout_session(request):
             ],
             mode='subscription',
             success_url=f'{config("front_end")}/',
-            cancel_url=f'{config("front_end")}/payment',
+            cancel_url=f'{config("front_end")}/plans',
         )
         r=rh.ResponseMsg(data={"url":checkout_session.url},error=False,msg="Subscription status !!!!")
         return Response(r.response, status=status.HTTP_200_OK)
