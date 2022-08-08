@@ -291,7 +291,7 @@ def getAllSavedAds(request):
             if s:
                 str1=[]
                 for i in s:
-                    str1.append("*"+i+"*")
+                    str1.append(i)
                 
                 str1=" AND ".join(str1)
                 
@@ -450,7 +450,7 @@ class getAllAds(viewsets.ViewSet):
         if s:
             str1=[]
             for i in s:
-                str1.append("*"+i+"*")
+                str1.append(i)
             
             str1=" AND ".join(str1)
             
