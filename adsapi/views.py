@@ -1063,11 +1063,11 @@ def getCtaStatus(request):
     cta_status=[]
     if res["hits"]["hits"]:
         for d in res["hits"]["hits"]:
-            cta_status.append(d["_source"]["ctaStatus"])
+            cta_status.append((d["_source"]["ctaStatus"]).lower())
         
         set_cta=set(cta_status)
-
-        r=rh.ResponseMsg(data={"cta_status":set_cta},error=False,msg="API is working successfully")
+        list_using_comp = [var.title() for var in list(set_cta)]
+        r=rh.ResponseMsg(data={"cta_status":list_using_comp},error=False,msg="API is working successfully")
         return Response(r.response)
 
     r=rh.ResponseMsg(data={},error=True,msg="Data is not available") 
