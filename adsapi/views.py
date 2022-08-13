@@ -205,7 +205,7 @@ def getAllSavedAds(request):
         if ad_list:
             query={
             "from": int(page_index)*8,
-            "size": 8,
+            "size": 12,
             "query": {
                     "bool": {
                     "must": [
@@ -370,7 +370,7 @@ class getAllAds(viewsets.ViewSet):
 
         query={
             "from": int(page_index)*8,
-            "size": 8,
+            "size": 12,
             "query": {
                 "bool":{
                     "must":[]
