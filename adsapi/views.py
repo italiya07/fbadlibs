@@ -563,8 +563,6 @@ def checkAdByFilter(request):
     page_index=request.data.get("page_index")
     page_size=request.data.get('number_of_pagead')
     query={
-        "from": int(page_index)*int(page_size),
-        "size": int(page_size),
         "query": {
             "bool":{
                 "must":[]
@@ -691,26 +689,17 @@ def checkAdByFilter(request):
     
     res=es.search(index=es_indice,body=query)
 
-    import math
-    if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
-        number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
-    elif int(res["hits"]["total"]["value"]) <= int(page_size):
-        number_of_pages=1
-    else:
-        number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
-
     if res["hits"]["hits"]:
         if len(res["hits"]["hits"]) > 0 :
             ad = res["hits"]["hits"][0]
             ad["_source"]["id"]=ad["_id"]
-            r=rh.ResponseMsg(data={"AdDetails": ad["_source"],"total_pages":number_of_pages ,"valid":True},error=False,msg="API is working successfully")
+            r=rh.ResponseMsg(data={"AdDetails": ad["_source"],"valid":True},error=False,msg="API is working successfully")
         else:
             r=rh.ResponseMsg(data={},error=False,msg="API is working successfully")
         return Response(r.response)
 
     r=rh.ResponseMsg(data=False,error=True,msg="Data is not available") 
-    return Response(r.response)
-        
+    return Response(r.response)        
 
 class userManager(viewsets.ViewSet):
     permission_classes=[IsPostOrIsAuthenticated]
