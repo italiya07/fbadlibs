@@ -333,6 +333,16 @@ def getAllSavedAds(request):
             res=es.search(index=es_indice,body=query)
             data=[]
 
+            import math
+            if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
+                number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
+            elif int(res["hits"]["total"]["value"]) <= int(page_size):
+                number_of_pages=1
+            else:
+                number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
+
+            final_data={}
+
             if res["hits"]["hits"]:
                 for d in res["hits"]["hits"]:
                     # url=str(d["_source"].get("bucketMediaURL")).replace("https://fbadslib-dev.s3.amazonaws.com/","")
@@ -342,7 +352,10 @@ def getAllSavedAds(request):
                     d["_source"]["id"]=d["_id"]
                     data.append(d["_source"])
 
-                r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
+                final_data["total_pages"]=number_of_pages
+                final_data["all_ads"]= data
+
+                r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
                 return Response(r.response)
         r=rh.ResponseMsg(data=[],error=True,msg="Data is not available") 
         return Response(r.response)
@@ -546,8 +559,11 @@ def checkAdByFilter(request):
     sort_param=request.data.get('sort_by')
     order_by=request.data.get('order_by')
     increased=request.data.get('increaseCount')
-
+    page_index=request.data.get("page_index")
+    page_size=request.data.get('number_of_pagead')
     query={
+        "from": int(page_index)*int(page_size),
+        "size": int(page_size),
         "query": {
             "bool":{
                 "must":[]
@@ -671,16 +687,22 @@ def checkAdByFilter(request):
             sort_param:{"order":order_by}
         }
         query["sort"].append(sort_query)
-
-    print(query)
     
     res=es.search(index=es_indice,body=query)
+
+    import math
+    if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
+        number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
+    elif int(res["hits"]["total"]["value"]) <= int(page_size):
+        number_of_pages=1
+    else:
+        number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
 
     if res["hits"]["hits"]:
         if len(res["hits"]["hits"]) > 0 :
             ad = res["hits"]["hits"][0]
             ad["_source"]["id"]=ad["_id"]
-            r=rh.ResponseMsg(data={"AdDetails": ad["_source"], "valid":True},error=False,msg="API is working successfully")
+            r=rh.ResponseMsg(data={"AdDetails": ad["_source"],"total_pages":number_of_pages ,"valid":True},error=False,msg="API is working successfully")
         else:
             r=rh.ResponseMsg(data={},error=False,msg="API is working successfully")
         return Response(r.response)
