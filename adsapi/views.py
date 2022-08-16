@@ -59,7 +59,7 @@ client = boto3.client("s3",
 
 
 
-es_indice='fbadslib-dev'
+es_indice='fbadslib-dev-flyontech'
 es.indices.create(index=es_indice,ignore=400)
 bucket_name="fbadslib-dev"
 
@@ -341,10 +341,9 @@ def getAllSavedAds(request):
                     # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                     d["_source"]["id"]=d["_id"]
                     data.append(d["_source"])
-               
+
                 r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
                 return Response(r.response)
-
         r=rh.ResponseMsg(data=[],error=True,msg="Data is not available") 
         return Response(r.response)
 
@@ -497,6 +496,13 @@ class getAllAds(viewsets.ViewSet):
             ad_ids.append(i["ad"])
         
         res=es.search(index=es_indice,body=query)
+
+        import math
+        if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
+            number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
+        else:
+            number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
+
         data=[]
         final_data={}
         if res["hits"]["hits"]:
@@ -507,8 +513,10 @@ class getAllAds(viewsets.ViewSet):
                 # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 d["_source"]["id"]=d["_id"]
                 data.append(d["_source"])
+            final_data["total_pages"]=number_of_pages
             final_data["saved_ads"]=ad_ids
             final_data["all_ads"]= data
+            
         
             r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
             return Response(r.response)
