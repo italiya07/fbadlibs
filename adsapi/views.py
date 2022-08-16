@@ -2,6 +2,7 @@ from calendar import c
 from cgi import print_directory
 from email.policy import HTTP
 from functools import partial
+from typing_extensions import final
 from django.shortcuts import render
 from elastic_transport import Serializer
 from rest_framework import viewsets
@@ -923,17 +924,27 @@ class subAllAds(viewsets.ViewSet):
     def create(self,request):
         page_name = request.data.get('page_name')
         page_index=request.data.get("page_index")
+        page_size=request.data.get('number_of_pagead')
         query={
-            "from": int(page_index)*8,
-            "size": 8,
+            "from": int(page_index)*int(page_size),
+            "size": int(page_size),
             "query": {
                 "match": {
                     "pageInfo.name": page_name
                 }
             }
         }
- 
+
         res=es.search(index=es_indice,body=query)
+        import math
+        if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
+            number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
+        elif int(res["hits"]["total"]["value"]) <= int(page_size):
+            number_of_pages=1
+        else:
+            number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
+
+        final_data={}
         data=[]
         if res["hits"]["hits"]:
             for d in res["hits"]["hits"]:
@@ -943,7 +954,9 @@ class subAllAds(viewsets.ViewSet):
                 # d["_source"]["thumbBucketUrl"]=pre_signed_url_generator(url)
                 d["_source"]["id"]=d["_id"]
                 data.append(d["_source"])
-            r=rh.ResponseMsg(data=data,error=False,msg="sub ads")
+            final_data["data"]=data
+            final_data["total_pages"]=number_of_pages
+            r=rh.ResponseMsg(data=final_data,error=False,msg="sub ads")
             return Response(r.response)
         r=rh.ResponseMsg(data=[],error=True,msg="Data is not available") 
         return Response(r.response)
