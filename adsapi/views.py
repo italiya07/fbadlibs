@@ -59,7 +59,7 @@ client = boto3.client("s3",
 
 
 
-es_indice='fbadslib-dev-flyontech'
+es_indice='fbadslib-dev'
 es.indices.create(index=es_indice,ignore=400)
 bucket_name="fbadslib-dev"
 
@@ -500,6 +500,8 @@ class getAllAds(viewsets.ViewSet):
         import math
         if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
             number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
+        elif int(res["hits"]["total"]["value"]) <= int(page_size):
+            number_of_pages=1
         else:
             number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
 
