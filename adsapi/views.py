@@ -194,6 +194,7 @@ def getAllSavedAds(request):
         sort_param=request.data.get('sort_by')
         order_by=request.data.get('order_by')
         increased=request.data.get('increaseCount')
+        page_size=request.data.get('number_of_pagead')
 
         ad_list=[]
         if user:
@@ -204,8 +205,8 @@ def getAllSavedAds(request):
 
         if ad_list:
             query={
-            "from": int(page_index)*8,
-            "size": 12,
+            "from": int(page_index)*int(page_size),
+            "size": int(page_size),
             "query": {
                     "bool": {
                     "must": [
@@ -367,10 +368,10 @@ class getAllAds(viewsets.ViewSet):
         order_by=request.data.get('order_by')
         increased=request.data.get('increaseCount')
         user_obj=request.user
-
+        page_size=request.data.get('number_of_pagead')
         query={
-            "from": int(page_index)*8,
-            "size": 12,
+            "from": int(page_index)*int(page_size),
+            "size": int(page_size),
             "query": {
                 "bool":{
                     "must":[]
