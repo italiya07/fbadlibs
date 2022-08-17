@@ -334,15 +334,15 @@ def getAllSavedAds(request):
             res=es.search(index=es_indice,body=query)
             data=[]
 
-            import math
-            if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
-                number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
-            elif int(res["hits"]["total"]["value"]) <= int(page_size):
-                number_of_pages=1
-            else:
-                number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
+            # import math
+            # if int(res["hits"]["total"]["value"]) % int(page_size) == 0:
+            #     number_of_pages=(int(res["hits"]["total"]["value"])/int(page_size))
+            # elif int(res["hits"]["total"]["value"]) <= int(page_size):
+            #     number_of_pages=1
+            # else:
+            #     number_of_pages=math.ceil(int(res["hits"]["total"]["value"])/int(page_size))   
 
-            final_data={}
+            # final_data={}
 
             if res["hits"]["hits"]:
                 for d in res["hits"]["hits"]:
@@ -353,10 +353,10 @@ def getAllSavedAds(request):
                     d["_source"]["id"]=d["_id"]
                     data.append(d["_source"])
 
-                final_data["total_pages"]=number_of_pages
-                final_data["all_ads"]= data
+                # final_data["total_pages"]=number_of_pages
+                # final_data["all_ads"]= data
 
-                r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
+                r=rh.ResponseMsg(data=data,error=False,msg="API is working successfully")
                 return Response(r.response)
         r=rh.ResponseMsg(data=[],error=True,msg="Data is not available") 
         return Response(r.response)
