@@ -206,8 +206,8 @@ def getAllSavedAds(request):
 
         if ad_list:
             query={
-            "from": int(page_index)*int(page_size),
-            "size": int(page_size),
+            # "from": int(page_index)*int(page_size),
+            # "size": int(page_size),
             "query": {
                     "bool": {
                     "must": [
