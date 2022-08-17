@@ -353,7 +353,7 @@ def getAllSavedAds(request):
                     d["_source"]["id"]=d["_id"]
                     data.append(d["_source"])
 
-                final_data["total_pages"]=res["hits"]["total"]["value"]
+                final_data["total_ads"]=res["hits"]["total"]["value"]
                 final_data["all_ads"]= data
 
                 r=rh.ResponseMsg(data=final_data,error=False,msg="API is working successfully")
