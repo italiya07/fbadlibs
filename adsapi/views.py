@@ -874,7 +874,7 @@ class ManageSaveAds(viewsets.ViewSet):
     # @method_decorator(subscription_required)
     def destroy(self,request,pk=None):
         user_obj=request.user
-        ad_obj=SaveAds.objects.get(user__id=user_obj.id,ad=pk)
+        ad_obj=SaveAds.objects.filter(user__id=user_obj.id,ad=pk).all()
         add=[]
         query={
                 "size": 10000,
