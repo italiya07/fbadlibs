@@ -1101,7 +1101,7 @@ def getCtaStatus(request):
             cta_status.append((d["_source"]["ctaStatus"]).lower())
         
         set_cta=set(cta_status)
-        list_using_comp = [var.title() for var in list(set_cta)]
+        list_using_comp = [var.title() for var in list(set_cta) if len(var)>0 ]
         r=rh.ResponseMsg(data={"cta_status":list_using_comp},error=False,msg="API is working successfully")
         return Response(r.response)
 
