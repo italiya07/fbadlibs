@@ -879,7 +879,7 @@ class ManageSaveAds(viewsets.ViewSet):
         query={
                 "size": 10000,
                 "query": {
-                    "terms": {
+                    "match": {
                         "_id" : ad_obj.ad
                     }
                 }
